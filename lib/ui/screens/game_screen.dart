@@ -147,8 +147,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           // Current player indicator
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            color: AppColors.primaryRed.withOpacity(0.2),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.primaryRed.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(14),
+            ),
             child: Text(
               '${currentPlayer.displayName}\'s turn',
               textAlign: TextAlign.center,
@@ -166,8 +170,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           if (gameState.errorMessage != null)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(8),
-              color: AppColors.error.withOpacity(0.2),
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.error.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(14),
+              ),
               child: Text(
                 gameState.errorMessage!,
                 textAlign: TextAlign.center,

@@ -61,7 +61,7 @@ class _LeaderboardRow extends StatelessWidget {
         color: entry.rank <= 3
             ? _rankColor.withOpacity(0.1)
             : AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
         border: entry.rank <= 3
             ? Border.all(color: _rankColor.withOpacity(0.3))
             : null,

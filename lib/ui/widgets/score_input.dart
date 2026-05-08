@@ -93,7 +93,7 @@ class _ScoreInputState extends State<ScoreInput> {
                 Switch(
                   value: _lastDartDouble,
                   onChanged: (v) => setState(() => _lastDartDouble = v),
-                  activeColor: AppColors.secondaryYellow,
+                  activeThumbColor: AppColors.secondaryYellow,
                 ),
               ],
             ),
@@ -194,10 +194,10 @@ class _NumpadButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: color ?? AppColors.surfaceDark,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
         child: Center(
           child: Text(
             label,

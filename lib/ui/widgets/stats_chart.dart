@@ -127,7 +127,7 @@ class StatsChart extends StatelessWidget {
             toY: _values[index],
             color: colors[index],
             width: 22,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
           ),
         ],
       );

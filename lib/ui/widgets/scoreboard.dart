@@ -18,12 +18,11 @@ class Scoreboard extends StatelessWidget {
     final currentLeg = game.legs[currentLegIndex];
 
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
         color: AppColors.surfaceDark,
-        border: Border(
-          bottom: BorderSide(color: AppColors.surfaceLight),
-        ),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: game.players.map((player) {
@@ -37,7 +36,10 @@ class Scoreboard extends StatelessWidget {
                 border: isActive
                     ? Border.all(color: AppColors.secondaryYellow, width: 2)
                     : null,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
+                color: isActive
+                    ? AppColors.secondaryYellow.withOpacity(0.08)
+                    : null,
               ),
               child: Column(
                 children: [
