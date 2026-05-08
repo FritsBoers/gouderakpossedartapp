@@ -24,13 +24,13 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // TODO: Replace with your actual Firebase Web config from flutterfire configure
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_API_KEY',
-    appId: 'YOUR_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    authDomain: 'YOUR_AUTH_DOMAIN',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
+    apiKey: 'AIzaSyCEJYsWCdPDZ0oHk68vPRb9cSB__KggZSQ',
+    appId: '1:211642743133:web:b3e97271b3bd51d94650b4',
+    messagingSenderId: '211642743133',
+    projectId: 'grakpossedartapp',
+    authDomain: 'grakpossedartapp.firebaseapp.com',
+    storageBucket: 'grakpossedartapp.firebasestorage.app',
+    measurementId: 'G-YEBT14VTY9',
   );
 }
