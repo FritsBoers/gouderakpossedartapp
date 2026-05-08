@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_colors.dart';
+import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/stats_provider.dart';
 import '../widgets/stats_chart.dart';
@@ -125,22 +127,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 const SizedBox(height: 16),
                 // Editable nickname
-                GestureDetector(
+                InkWell(
                   onTap: () => _editDisplayName(user.displayName),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        user.displayName,
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.edit,
-                        size: 20,
-                        color: AppColors.textMuted,
-                      ),
-                    ],
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          user.displayName,
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.edit,
+                          size: 20,
+                          color: AppColors.textMuted,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 Text(
@@ -203,6 +212,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                 const SizedBox(height: 32),
 
+                // Dev: Reset all games
+                TextButton.icon(
+                  onPressed: () => _confirmResetGames(context),
+                  icon: const Icon(Icons.delete_sweep, color: Colors.orange),
+                  label: const Text(
+                    'Reset All Game Data',
+                    style: TextStyle(color: Colors.orange),
+                  ),
+                ),
+
                 // Delete account
                 TextButton.icon(
                   onPressed: () => _confirmDeleteAccount(context),
@@ -220,6 +239,55 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         error: (_, __) => const Center(child: Text('Error loading profile')),
       ),
     );
+  }
+
+  Future<void> _confirmResetGames(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Reset All Games'),
+        content: const Text(
+          'This will delete ALL game data for every player. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete All', style: TextStyle(color: Colors.orange)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final firestore = FirebaseFirestore.instance;
+      // Delete all games
+      final games = await firestore.collection('games').get();
+      final batch = firestore.batch();
+      for (final doc in games.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+
+      // Reset current user's stats
+      final user = ref.read(authServiceProvider).currentUser;
+      if (user != null) {
+        await firestore.collection('users').doc(user.uid).update({
+          'stats': const PlayerStats().toMap(),
+        });
+      }
+
+      ref.invalidate(currentUserProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('All game data deleted')),
+        );
+      }
+    }
   }
 
   Future<void> _confirmDeleteAccount(BuildContext context) async {

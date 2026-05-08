@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/game_model.dart';
+import '../../models/user_model.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/game_provider.dart';
 import '../../core/utils/checkout_suggestions.dart';
 import '../widgets/score_input.dart';
@@ -19,22 +21,18 @@ class GameScreen extends ConsumerStatefulWidget {
 
 class _GameScreenState extends ConsumerState<GameScreen> {
   bool _showSetup = true;
-  final _player1Controller = TextEditingController(text: 'Player 1');
-  final _player2Controller = TextEditingController(text: 'Player 2');
+  UserModel? _player1;
+  UserModel? _player2;
   int _startingScore = 501;
   int _legsToWin = 3;
 
-  @override
-  void dispose() {
-    _player1Controller.dispose();
-    _player2Controller.dispose();
-    super.dispose();
-  }
-
   void _startGame() {
+    if (_player1 == null || _player2 == null) return;
+    if (_player1!.uid == _player2!.uid) return;
+
     final players = [
-      GamePlayer(uid: 'local_1', displayName: _player1Controller.text.trim()),
-      GamePlayer(uid: 'local_2', displayName: _player2Controller.text.trim()),
+      GamePlayer(uid: _player1!.uid, displayName: _player1!.displayName),
+      GamePlayer(uid: _player2!.uid, displayName: _player2!.displayName),
     ];
 
     ref.read(activeGameProvider.notifier).startLocalGame(
@@ -55,55 +53,112 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   Widget _buildSetupScreen(BuildContext context) {
+    final allUsers = ref.watch(allUsersProvider);
+
     return Scaffold(
       appBar: AppBar(title: const Text('New Game')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _player1Controller,
-              decoration: const InputDecoration(labelText: 'Player 1'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _player2Controller,
-              decoration: const InputDecoration(labelText: 'Player 2'),
-            ),
-            const SizedBox(height: 24),
-            // Starting score selector
-            Text('Starting Score', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 301, label: Text('301')),
-                ButtonSegment(value: 501, label: Text('501')),
-                ButtonSegment(value: 701, label: Text('701')),
+      body: allUsers.when(
+        data: (users) {
+          if (users.isEmpty) {
+            return const Center(child: Text('No registered players found'));
+          }
+          return Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Player 1 dropdown
+                Text('Player 1', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: _player1?.uid,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    hintText: 'Select player 1',
+                  ),
+                  items: users.map((u) => DropdownMenuItem(
+                    value: u.uid,
+                    child: Text(u.displayName),
+                  )).toList(),
+                  onChanged: (uid) {
+                    setState(() {
+                      _player1 = users.firstWhere((u) => u.uid == uid);
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                // Player 2 dropdown
+                Text('Player 2', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: _player2?.uid,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    hintText: 'Select player 2',
+                  ),
+                  items: users.map((u) => DropdownMenuItem(
+                    value: u.uid,
+                    child: Text(u.displayName),
+                  )).toList(),
+                  onChanged: (uid) {
+                    setState(() {
+                      _player2 = users.firstWhere((u) => u.uid == uid);
+                    });
+                  },
+                ),
+                if (_player1 != null && _player2 != null && _player1!.uid == _player2!.uid)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Please select two different players',
+                      style: TextStyle(color: AppColors.error),
+                    ),
+                  ),
+                const SizedBox(height: 24),
+                // Starting score selector
+                Text('Starting Score', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                SegmentedButton<int>(
+                  segments: const [
+                    ButtonSegment(value: 301, label: Text('301')),
+                    ButtonSegment(value: 501, label: Text('501')),
+                    ButtonSegment(value: 701, label: Text('701')),
+                  ],
+                  selected: {_startingScore},
+                  onSelectionChanged: (set) => setState(() => _startingScore = set.first),
+                ),
+                const SizedBox(height: 24),
+                // Legs to win selector
+                Text('Legs to Win', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                SegmentedButton<int>(
+                  segments: const [
+                    ButtonSegment(value: 1, label: Text('1')),
+                    ButtonSegment(value: 3, label: Text('3')),
+                    ButtonSegment(value: 5, label: Text('5')),
+                  ],
+                  selected: {_legsToWin},
+                  onSelectionChanged: (set) => setState(() => _legsToWin = set.first),
+                ),
+                const Spacer(),
+                ElevatedButton(
+                  onPressed: _player1 != null &&
+                          _player2 != null &&
+                          _player1!.uid != _player2!.uid
+                      ? _startGame
+                      : null,
+                  child: const Text('START GAME'),
+                ),
               ],
-              selected: {_startingScore},
-              onSelectionChanged: (set) => setState(() => _startingScore = set.first),
             ),
-            const SizedBox(height: 24),
-            // Legs to win selector
-            Text('Legs to Win', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 1, label: Text('1')),
-                ButtonSegment(value: 3, label: Text('3')),
-                ButtonSegment(value: 5, label: Text('5')),
-              ],
-              selected: {_legsToWin},
-              onSelectionChanged: (set) => setState(() => _legsToWin = set.first),
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: _startGame,
-              child: const Text('START GAME'),
-            ),
-          ],
-        ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Failed to load players: $e')),
       ),
     );
   }

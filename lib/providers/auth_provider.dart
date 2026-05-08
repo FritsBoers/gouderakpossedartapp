@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
@@ -20,6 +21,13 @@ final currentUserProvider = FutureProvider<UserModel?>((ref) async {
 
   final authService = ref.read(authServiceProvider);
   return authService.getUserProfile(user.uid);
+});
+
+/// Provider for all registered users.
+final allUsersProvider = FutureProvider<List<UserModel>>((ref) async {
+  final snapshot =
+      await FirebaseFirestore.instance.collection('users').get();
+  return snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
 });
 
 /// Provider to check if email is verified.
