@@ -1,0 +1,10 @@
+{
+  "name": "Gouderak Posse Darts",
+  "short_name": "GP Darts",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#D32F2F",
+  "description": "De Gouderak Posse Dart App",
+  "orientation": "portrait-primary"
+}
