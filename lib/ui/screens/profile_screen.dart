@@ -1,8 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:web/web.dart' as web;
 import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/stats_provider.dart';
@@ -17,59 +14,6 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  bool _isUploading = false;
-
-  Future<void> _pickAndUploadAvatar() async {
-    final input = web.document.createElement('input') as web.HTMLInputElement;
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.click();
-
-    await input.onChange.first;
-    final files = input.files;
-    if (files == null || files.length == 0) return;
-
-    final file = files.item(0)!;
-    if (file.size > 2 * 1024 * 1024) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Image must be under 2MB')),
-        );
-      }
-      return;
-    }
-
-    setState(() => _isUploading = true);
-
-    try {
-      final reader = web.FileReader();
-      reader.readAsArrayBuffer(file);
-      await reader.onLoadEnd.first;
-
-      final result = reader.result;
-      if (result == null) throw Exception('Failed to read file');
-
-      final bytes = (result as dynamic);
-      final data = Uint8List.view(bytes as dynamic);
-
-      await ref.read(authServiceProvider).uploadAvatar(data, file.name);
-      ref.invalidate(currentUserProvider);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile picture updated')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Upload failed: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isUploading = false);
-    }
-  }
 
   Future<void> _editDisplayName(String currentName) async {
     final controller = TextEditingController(text: currentName);
@@ -168,49 +112,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                // Avatar with edit overlay
-                GestureDetector(
-                  onTap: _isUploading ? null : _pickAndUploadAvatar,
-                  child: Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 52,
-                        backgroundColor: AppColors.surfaceLight,
-                        backgroundImage: user.avatarUrl != null
-                            ? NetworkImage(user.avatarUrl!)
-                            : null,
-                        child: _isUploading
-                            ? const CircularProgressIndicator(strokeWidth: 2)
-                            : user.avatarUrl == null
-                                ? Text(
-                                    user.displayName.isNotEmpty
-                                        ? user.displayName[0].toUpperCase()
-                                        : '?',
-                                    style: const TextStyle(fontSize: 36),
-                                  )
-                                : null,
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryRed,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.backgroundDark,
-                              width: 2,
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            size: 18,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
+                // Avatar
+                CircleAvatar(
+                  radius: 52,
+                  backgroundColor: AppColors.surfaceLight,
+                  child: Text(
+                    user.displayName.isNotEmpty
+                        ? user.displayName[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(fontSize: 36),
                   ),
                 ),
                 const SizedBox(height: 16),
