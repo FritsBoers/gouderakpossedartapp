@@ -1,16 +1,130 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:web/web.dart' as web;
 import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/stats_provider.dart';
 import '../widgets/stats_chart.dart';
 
 /// Profile screen showing user info, stats, and account actions.
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  bool _isUploading = false;
+
+  Future<void> _pickAndUploadAvatar() async {
+    final input = web.document.createElement('input') as web.HTMLInputElement;
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+
+    await input.onChange.first;
+    final files = input.files;
+    if (files == null || files.length == 0) return;
+
+    final file = files.item(0)!;
+    if (file.size > 2 * 1024 * 1024) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Image must be under 2MB')),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isUploading = true);
+
+    try {
+      final reader = web.FileReader();
+      reader.readAsArrayBuffer(file);
+      await reader.onLoadEnd.first;
+
+      final result = reader.result;
+      if (result == null) throw Exception('Failed to read file');
+
+      final bytes = (result as dynamic);
+      final data = Uint8List.view(bytes as dynamic);
+
+      await ref.read(authServiceProvider).uploadAvatar(data, file.name);
+      ref.invalidate(currentUserProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile picture updated')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  Future<void> _editDisplayName(String currentName) async {
+    final controller = TextEditingController(text: currentName);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Nickname'),
+        content: TextField(
+          controller: controller,
+          maxLength: 20,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Enter your nickname',
+            counterText: '',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final name = controller.text.trim();
+              if (name.length >= 3) {
+                Navigator.pop(ctx, name);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (newName != null && newName != currentName) {
+      try {
+        await ref.read(authServiceProvider).updateDisplayName(newName);
+        ref.invalidate(currentUserProvider);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Nickname updated')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to update: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
     final stats = ref.watch(playerStatsProvider);
 
@@ -54,26 +168,70 @@ class ProfileScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                // Avatar
-                CircleAvatar(
-                  radius: 48,
-                  backgroundColor: AppColors.surfaceLight,
-                  backgroundImage: user.avatarUrl != null
-                      ? NetworkImage(user.avatarUrl!)
-                      : null,
-                  child: user.avatarUrl == null
-                      ? Text(
-                          user.displayName.isNotEmpty
-                              ? user.displayName[0].toUpperCase()
-                              : '?',
-                          style: const TextStyle(fontSize: 36),
-                        )
-                      : null,
+                // Avatar with edit overlay
+                GestureDetector(
+                  onTap: _isUploading ? null : _pickAndUploadAvatar,
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 52,
+                        backgroundColor: AppColors.surfaceLight,
+                        backgroundImage: user.avatarUrl != null
+                            ? NetworkImage(user.avatarUrl!)
+                            : null,
+                        child: _isUploading
+                            ? const CircularProgressIndicator(strokeWidth: 2)
+                            : user.avatarUrl == null
+                                ? Text(
+                                    user.displayName.isNotEmpty
+                                        ? user.displayName[0].toUpperCase()
+                                        : '?',
+                                    style: const TextStyle(fontSize: 36),
+                                  )
+                                : null,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryRed,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.backgroundDark,
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  user.displayName,
-                  style: Theme.of(context).textTheme.headlineMedium,
+                // Editable nickname
+                GestureDetector(
+                  onTap: () => _editDisplayName(user.displayName),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        user.displayName,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.edit,
+                        size: 20,
+                        color: AppColors.textMuted,
+                      ),
+                    ],
+                  ),
                 ),
                 Text(
                   user.email,
@@ -137,7 +295,7 @@ class ProfileScreen extends ConsumerWidget {
 
                 // Delete account
                 TextButton.icon(
-                  onPressed: () => _confirmDeleteAccount(context, ref),
+                  onPressed: () => _confirmDeleteAccount(context),
                   icon: const Icon(Icons.delete_forever, color: AppColors.error),
                   label: const Text(
                     'Delete Account',
@@ -154,7 +312,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(

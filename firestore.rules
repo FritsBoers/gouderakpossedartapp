@@ -25,12 +25,13 @@ service cloud.firestore {
       // Users can create their own profile (no verification required for initial signup)
       allow create: if isOwner(uid);
 
-      // Users can only update their own profile, must be verified
-      allow update: if isOwner(uid) && isVerified()
-        // Validate display name format
-        && request.resource.data.displayName is string
-        && request.resource.data.displayName.size() >= 3
-        && request.resource.data.displayName.size() <= 20;
+      // Users can only update their own profile
+      allow update: if isOwner(uid)
+        // If displayName is being changed, validate format
+        && (request.resource.data.displayName == resource.data.displayName
+            || (request.resource.data.displayName is string
+                && request.resource.data.displayName.size() >= 3
+                && request.resource.data.displayName.size() <= 20));
 
       // Users can delete their own profile
       allow delete: if isOwner(uid);

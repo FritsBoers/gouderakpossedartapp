@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../models/user_model.dart';
 
 /// Handles authentication and user profile management.
@@ -7,6 +10,7 @@ import '../models/user_model.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   /// Stream of auth state changes.
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -141,6 +145,32 @@ class AuthService {
     await _firestore.collection('users').doc(user.uid).update({
       'displayName': displayName,
     });
+  }
+
+  /// Upload profile picture and update user document.
+  Future<String> uploadAvatar(Uint8List imageBytes, String fileName) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    // Determine content type from extension
+    final ext = fileName.split('.').last.toLowerCase();
+    final contentType = switch (ext) {
+      'png' => 'image/png',
+      'gif' => 'image/gif',
+      'webp' => 'image/webp',
+      _ => 'image/jpeg',
+    };
+
+    final ref = _storage.ref('avatars/${user.uid}.$ext');
+    await ref.putData(imageBytes, SettableMetadata(contentType: contentType));
+    final url = await ref.getDownloadURL();
+
+    await user.updatePhotoURL(url);
+    await _firestore.collection('users').doc(user.uid).update({
+      'avatarUrl': url,
+    });
+
+    return url;
   }
 
   /// Create user document in Firestore.
