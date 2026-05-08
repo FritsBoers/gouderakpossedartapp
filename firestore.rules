@@ -22,8 +22,10 @@ service cloud.firestore {
       // Any authenticated user can read profiles (for leaderboards, game display)
       allow read: if isAuth();
 
-      // Users can only create/update their own profile, must be verified
-      allow create: if isOwner(uid) && isVerified();
+      // Users can create their own profile (no verification required for initial signup)
+      allow create: if isOwner(uid);
+
+      // Users can only update their own profile, must be verified
       allow update: if isOwner(uid) && isVerified()
         // Validate display name format
         && request.resource.data.displayName is string

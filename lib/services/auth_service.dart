@@ -20,6 +20,21 @@ class AuthService {
       email: email.trim(),
       password: password,
     );
+
+    // Ensure user document exists (may have failed during signup)
+    final user = credential.user;
+    if (user != null) {
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+      if (!doc.exists) {
+        await _createUserDocument(
+          uid: user.uid,
+          email: user.email ?? email.trim(),
+          displayName: user.displayName ?? 'Player',
+          provider: 'email',
+        );
+      }
+    }
+
     return credential;
   }
 
