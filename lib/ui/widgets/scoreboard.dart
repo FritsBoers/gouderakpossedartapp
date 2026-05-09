@@ -18,8 +18,8 @@ class Scoreboard extends StatelessWidget {
     final currentLeg = game.legs[currentLegIndex];
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      margin: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(20),
@@ -43,7 +43,7 @@ class Scoreboard extends StatelessWidget {
 
           return Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
               decoration: BoxDecoration(
                 border: isActive
                     ? Border.all(color: AppColors.secondaryYellow, width: 2)
@@ -59,7 +59,7 @@ class Scoreboard extends StatelessWidget {
                   Text(
                     player.displayName,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: isActive
                           ? AppColors.secondaryYellow
@@ -67,19 +67,19 @@ class Scoreboard extends StatelessWidget {
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   // Remaining score (large)
                   Text(
                     '$remaining',
                     style: TextStyle(
-                      fontSize: 42,
+                      fontSize: 32,
                       fontWeight: FontWeight.w700,
                       color: isActive
                           ? AppColors.textPrimary
                           : AppColors.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   // Legs won
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -95,7 +95,7 @@ class Scoreboard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   // Per-player stats
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,

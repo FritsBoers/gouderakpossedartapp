@@ -116,16 +116,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 // Avatar
                 CircleAvatar(
-                  radius: 52,
+                  radius: 36,
                   backgroundColor: AppColors.surfaceLight,
                   child: Text(
                     user.displayName.isNotEmpty
                         ? user.displayName[0].toUpperCase()
                         : '?',
-                    style: const TextStyle(fontSize: 36),
+                    style: const TextStyle(fontSize: 26),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 // Editable nickname
                 InkWell(
                   onTap: () => _editDisplayName(user.displayName),
@@ -156,7 +156,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   user.email,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
 
                 // Stats
                 stats.when(
