@@ -5,6 +5,8 @@ import '../../models/game_model.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/game_provider.dart';
+import '../../providers/stats_provider.dart';
+import '../../providers/leaderboard_provider.dart';
 import '../../core/utils/checkout_suggestions.dart';
 import '../widgets/score_input.dart';
 import '../widgets/scoreboard.dart';
@@ -21,6 +23,7 @@ class GameScreen extends ConsumerStatefulWidget {
 
 class _GameScreenState extends ConsumerState<GameScreen> {
   bool _showSetup = true;
+  bool _statsUpdated = false;
   GameMode _gameMode = GameMode.singles;
   // Singles players
   UserModel? _player1;
@@ -102,7 +105,10 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           teams: teams,
         );
 
-    setState(() => _showSetup = false);
+    setState(() {
+      _showSetup = false;
+      _statsUpdated = false;
+    });
   }
 
   @override
@@ -446,6 +452,16 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   Widget _buildGameOverScreen(BuildContext context, GameModel game) {
+    // Update stats once when game completes
+    if (!_statsUpdated) {
+      _statsUpdated = true;
+      Future.microtask(() async {
+        await ref.read(statsServiceProvider).updateStatsAfterGame(game: game);
+        ref.invalidate(playerStatsProvider);
+        ref.invalidate(leaderboardProvider);
+      });
+    }
+
     final winner = game.players.firstWhere((p) => p.uid == game.winnerId);
     String winnerLabel;
     if (game.gameMode == GameMode.teams && game.teams != null) {
