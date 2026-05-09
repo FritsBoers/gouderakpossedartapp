@@ -36,7 +36,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       await ref.read(authServiceProvider).signInWithGoogle();
     } catch (e) {
-      setState(() => _errorMessage = 'Google sign-in failed. Please try again.');
+      if (mounted) {
+        setState(() => _errorMessage = 'Google sign-in failed: $e');
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -103,14 +105,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 24),
 
               // Divider
-              Row(
+              const Row(
                 children: [
-                  const Expanded(child: Divider(color: AppColors.surfaceLight)),
+                  Expanded(child: Divider(color: AppColors.surfaceLight)),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Text('or', style: TextStyle(color: AppColors.textMuted)),
                   ),
-                  const Expanded(child: Divider(color: AppColors.surfaceLight)),
+                  Expanded(child: Divider(color: AppColors.surfaceLight)),
                 ],
               ),
               const SizedBox(height: 24),
