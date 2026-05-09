@@ -375,7 +375,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.history),
-            onPressed: () => _showHistory(context, currentLeg),
+            onPressed: () => _showHistory(context, currentLeg, game.players),
           ),
         ],
       ),
@@ -499,10 +499,10 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     );
   }
 
-  void _showHistory(BuildContext context, Leg currentLeg) {
+  void _showHistory(BuildContext context, Leg currentLeg, List<GamePlayer> players) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => TurnHistory(turns: currentLeg.turns),
+      builder: (context) => TurnHistory(turns: currentLeg.turns, players: players),
     );
   }
 }

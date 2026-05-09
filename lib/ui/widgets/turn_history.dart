@@ -5,8 +5,14 @@ import '../../models/game_model.dart';
 /// Scrollable list of turns taken in the current leg.
 class TurnHistory extends StatelessWidget {
   final List<Turn> turns;
+  final List<GamePlayer> players;
 
-  const TurnHistory({super.key, required this.turns});
+  const TurnHistory({super.key, required this.turns, required this.players});
+
+  String _playerName(String playerId) {
+    final player = players.where((p) => p.uid == playerId).firstOrNull;
+    return player?.displayName ?? playerId;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +38,11 @@ class TurnHistory extends StatelessWidget {
                     itemCount: turns.length,
                     itemBuilder: (context, index) {
                       final turn = turns[turns.length - 1 - index]; // Newest first
-                      return _TurnTile(turn: turn, index: turns.length - index);
+                      return _TurnTile(
+                        turn: turn,
+                        index: turns.length - index,
+                        playerName: _playerName(turn.playerId),
+                      );
                     },
                   ),
           ),
@@ -45,8 +55,9 @@ class TurnHistory extends StatelessWidget {
 class _TurnTile extends StatelessWidget {
   final Turn turn;
   final int index;
+  final String playerName;
 
-  const _TurnTile({required this.turn, required this.index});
+  const _TurnTile({required this.turn, required this.index, required this.playerName});
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +88,7 @@ class _TurnTile extends StatelessWidget {
           // Player name
           Expanded(
             child: Text(
-              turn.playerId.replaceAll('local_', 'Player '),
+              playerName,
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
           ),
