@@ -150,6 +150,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           if (users.isEmpty) {
             return const Center(child: Text('No registered players found'));
           }
+          final sortedUsers = List<UserModel>.from(users)
+            ..sort((a, b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -170,23 +172,23 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
                 // Player selection
                 if (_gameMode == GameMode.singles) ...[
-                  _buildPlayerDropdown('Player 1', _player1, users, (u) => setState(() => _player1 = u)),
+                  _buildPlayerDropdown('Player 1', _player1, sortedUsers, (u) => setState(() => _player1 = u)),
                   const SizedBox(height: 12),
-                  _buildPlayerDropdown('Player 2', _player2, users, (u) => setState(() => _player2 = u)),
+                  _buildPlayerDropdown('Player 2', _player2, sortedUsers, (u) => setState(() => _player2 = u)),
                   if (_player1 != null && _player2 != null && _player1!.uid == _player2!.uid)
                     _buildWarning('Please select two different players'),
                 ] else ...[
                   Text('Team 1', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.primaryRed)),
                   const SizedBox(height: 8),
-                  _buildPlayerDropdown('Player 1', _team1Player1, users, (u) => setState(() => _team1Player1 = u)),
+                  _buildPlayerDropdown('Player 1', _team1Player1, sortedUsers, (u) => setState(() => _team1Player1 = u)),
                   const SizedBox(height: 8),
-                  _buildPlayerDropdown('Player 2', _team1Player2, users, (u) => setState(() => _team1Player2 = u)),
+                  _buildPlayerDropdown('Player 2', _team1Player2, sortedUsers, (u) => setState(() => _team1Player2 = u)),
                   const SizedBox(height: 16),
                   Text('Team 2', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.secondaryYellow)),
                   const SizedBox(height: 8),
-                  _buildPlayerDropdown('Player 1', _team2Player1, users, (u) => setState(() => _team2Player1 = u)),
+                  _buildPlayerDropdown('Player 1', _team2Player1, sortedUsers, (u) => setState(() => _team2Player1 = u)),
                   const SizedBox(height: 8),
-                  _buildPlayerDropdown('Player 2', _team2Player2, users, (u) => setState(() => _team2Player2 = u)),
+                  _buildPlayerDropdown('Player 2', _team2Player2, sortedUsers, (u) => setState(() => _team2Player2 = u)),
                   if (_hasDuplicateTeamPlayers)
                     _buildWarning('Each player can only appear once'),
                 ],
