@@ -51,7 +51,7 @@ class HomeScreen extends ConsumerWidget {
 
               // Main actions
               _ActionButton(
-                icon: Icons.sports_esports,
+                icon: Icons.gps_fixed,
                 label: 'Local Game',
                 subtitle: 'Play on this device',
                 color: AppColors.primaryRed,
