@@ -17,9 +17,16 @@ class GouderakDartsApp extends ConsumerWidget {
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
+        final width = MediaQuery.of(context).size.width;
+        // Full width on mobile (<600), 80% on tablet, 60% on desktop
+        final double widthFactor = width < 600
+            ? 1.0
+            : width < 1200
+                ? 0.8
+                : 0.6;
         return Center(
           child: FractionallySizedBox(
-            widthFactor: 0.6,
+            widthFactor: widthFactor,
             child: child,
           ),
         );
