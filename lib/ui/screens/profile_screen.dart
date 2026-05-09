@@ -263,29 +263,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
 
     if (confirmed == true) {
-      final firestore = FirebaseFirestore.instance;
-      // Delete all games
-      final games = await firestore.collection('games').get();
-      final batch = firestore.batch();
-      for (final doc in games.docs) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit();
+      try {
+        final firestore = FirebaseFirestore.instance;
+        // Delete all games
+        final games = await firestore.collection('games').get();
+        final batch = firestore.batch();
+        for (final doc in games.docs) {
+          batch.delete(doc.reference);
+        }
+        if (games.docs.isNotEmpty) await batch.commit();
 
-      // Reset current user's stats
-      final user = ref.read(authServiceProvider).currentUser;
-      if (user != null) {
-        await firestore.collection('users').doc(user.uid).update({
-          'stats': const PlayerStats().toMap(),
-        });
-      }
+        // Reset current user's stats
+        final user = ref.read(authServiceProvider).currentUser;
+        if (user != null) {
+          await firestore.collection('users').doc(user.uid).update({
+            'stats': const PlayerStats().toMap(),
+          });
+        }
 
-      ref.invalidate(currentUserProvider);
+        ref.invalidate(currentUserProvider);
+        ref.invalidate(playerStatsProvider);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('All game data deleted')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('All game data deleted')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to reset: $e')),
+          );
+        }
       }
     }
   }
