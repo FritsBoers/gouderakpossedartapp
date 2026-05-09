@@ -76,12 +76,12 @@ class _TurnTile extends StatelessWidget {
             height: 28,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
+              color: AppColors.secondaryYellow,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Text(
               '$index',
-              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black),
             ),
           ),
           const SizedBox(width: 12),
