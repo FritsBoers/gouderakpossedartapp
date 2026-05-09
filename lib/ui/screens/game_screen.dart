@@ -325,20 +325,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     List<UserModel> users,
     ValueChanged<UserModel> onChanged,
   ) {
-    return DropdownButtonFormField<String>(
-      value: selected?.uid,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      items: users
-          .map((u) => DropdownMenuItem(value: u.uid, child: Text(u.displayName)))
-          .toList(),
-      onChanged: (uid) {
-        if (uid != null) {
-          onChanged(users.firstWhere((u) => u.uid == uid));
-        }
-      },
+    return _PlayerDropdown(
+      label: label,
+      selected: selected,
+      users: users,
+      onChanged: onChanged,
     );
   }
 
@@ -739,6 +730,120 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) => TurnHistory(turns: currentLeg.turns, players: players),
+    );
+  }
+}
+
+class _PlayerDropdown extends StatefulWidget {
+  final String label;
+  final UserModel? selected;
+  final List<UserModel> users;
+  final ValueChanged<UserModel> onChanged;
+
+  const _PlayerDropdown({
+    required this.label,
+    required this.selected,
+    required this.users,
+    required this.onChanged,
+  });
+
+  @override
+  State<_PlayerDropdown> createState() => _PlayerDropdownState();
+}
+
+class _PlayerDropdownState extends State<_PlayerDropdown> {
+  bool _isOpen = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GestureDetector(
+          onTap: () => setState(() => _isOpen = !_isOpen),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: _isOpen ? AppColors.secondaryYellow : AppColors.textMuted,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.selected?.displayName ?? widget.label,
+                    style: TextStyle(
+                      color: widget.selected != null
+                          ? AppColors.textPrimary
+                          : AppColors.textMuted,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                AnimatedRotation(
+                  turns: _isOpen ? 0.5 : 0,
+                  duration: const Duration(milliseconds: 200),
+                  child: const Icon(Icons.arrow_drop_down, color: AppColors.textMuted),
+                ),
+              ],
+            ),
+          ),
+        ),
+        ClipRect(
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            alignment: Alignment.topCenter,
+            child: _isOpen
+                ? Container(
+                    margin: const EdgeInsets.only(top: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceDark,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.textMuted.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: widget.users.map((u) {
+                        final isSelected = widget.selected?.uid == u.uid;
+                        return Material(
+                          color: isSelected
+                              ? AppColors.secondaryYellow.withValues(alpha: 0.15)
+                              : Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              widget.onChanged(u);
+                              setState(() => _isOpen = false);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              child: Text(
+                                u.displayName,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? AppColors.secondaryYellow
+                                      : AppColors.textPrimary,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  )
+                : const SizedBox(width: double.infinity),
+          ),
+        ),
+      ],
     );
   }
 }
