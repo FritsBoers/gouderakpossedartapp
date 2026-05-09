@@ -59,7 +59,7 @@ class Scoreboard extends StatelessWidget {
                   Text(
                     player.displayName,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: isActive
                           ? AppColors.secondaryYellow
@@ -72,7 +72,7 @@ class Scoreboard extends StatelessWidget {
                   Text(
                     '$remaining',
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 42,
                       fontWeight: FontWeight.w700,
                       color: isActive
                           ? AppColors.textPrimary
@@ -131,7 +131,7 @@ class _MiniStat extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
@@ -139,7 +139,7 @@ class _MiniStat extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            fontSize: 10,
+            fontSize: 11,
             color: AppColors.textMuted,
           ),
         ),
