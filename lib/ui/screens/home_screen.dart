@@ -87,16 +87,15 @@ class HomeScreen extends ConsumerWidget {
               // Profile button
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                child: OutlinedButton.icon(
+                child: TextButton.icon(
                   onPressed: () => context.push('/profile'),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.white54),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  icon: const Icon(Icons.person, size: 14, color: Colors.white),
-                  label: const Text('Profile & Stats', style: TextStyle(fontSize: 11, color: Colors.white)),
+                  icon: const Icon(Icons.person, size: 18, color: Colors.white),
+                  label: const Text('Profile & Stats', style: TextStyle(fontSize: 15, color: Colors.white)),
                 ),
               ),
             ],
