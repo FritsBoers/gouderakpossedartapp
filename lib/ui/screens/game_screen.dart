@@ -24,6 +24,12 @@ class GameScreen extends ConsumerStatefulWidget {
 class _GameScreenState extends ConsumerState<GameScreen> {
   bool _showSetup = true;
   bool _statsUpdated = false;
+  bool _throwForBull = false;
+  bool _bullThrowPhase = false;
+  int _bullThrowPlayerIndex = 0;
+  Map<String, int> _bullThrowScores = {};
+  List<GamePlayer> _pendingPlayers = [];
+  List<List<String>>? _pendingTeams;
   GameMode _gameMode = GameMode.singles;
   // Singles players
   UserModel? _player1;
@@ -52,7 +58,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     return uids.length != uids.toSet().length;
   }
 
-  void _startGame() {
+  void _startGame() => _startGameOrBullThrow();
+
+  void _startGameOrBullThrow() {
     List<GamePlayer> players;
     List<List<String>>? teams;
 
@@ -69,7 +77,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           _team2Player1 == null ||
           _team2Player2 == null) return;
       if (_hasDuplicateTeamPlayers) return;
-      // Players alternate: T1P1, T2P1, T1P2, T2P2
       players = [
         GamePlayer(uid: _team1Player1!.uid, displayName: _team1Player1!.displayName),
         GamePlayer(uid: _team2Player1!.uid, displayName: _team2Player1!.displayName),
@@ -82,10 +89,24 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       ];
     }
 
-    // Calculate actual legsToWin based on format
+    if (_throwForBull) {
+      setState(() {
+        _showSetup = false;
+        _bullThrowPhase = true;
+        _bullThrowPlayerIndex = 0;
+        _bullThrowScores = {};
+        _pendingPlayers = players;
+        _pendingTeams = teams;
+      });
+    } else {
+      _launchGame(players, teams);
+    }
+  }
+
+  void _launchGame(List<GamePlayer> players, List<List<String>>? teams) {
     final legsToWin = _gameFormat == GameFormat.bestOf
-        ? (_legsCount ~/ 2) + 1 // best of 5 → need 3
-        : _legsCount; // first to 3 → need 3
+        ? (_legsCount ~/ 2) + 1
+        : _legsCount;
 
     final setsToWin = _setsCount == 0
         ? 0
@@ -108,6 +129,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     setState(() {
       _showSetup = false;
       _statsUpdated = false;
+      _bullThrowPhase = false;
     });
   }
 
@@ -115,6 +137,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   Widget build(BuildContext context) {
     if (_showSetup) {
       return _buildSetupScreen(context);
+    }
+    if (_bullThrowPhase) {
+      return _buildBullThrowScreen(context);
     }
     return _buildGameScreen(context);
   }
@@ -251,6 +276,24 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   selected: {_exitRule},
                   onSelectionChanged: (set) => setState(() => _exitRule = set.first),
                 ),
+                const SizedBox(height: 20),
+
+                // Throw for bull
+                Row(
+                  children: [
+                    Text('Throw for Bull', style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(width: 8),
+                    Switch(
+                      value: _throwForBull,
+                      onChanged: (on) => setState(() => _throwForBull = on),
+                    ),
+                  ],
+                ),
+                if (_throwForBull)
+                  Text(
+                    'Each player throws one dart at the bull to decide who goes first',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
+                  ),
                 const SizedBox(height: 32),
 
                 ElevatedButton(
@@ -523,6 +566,241 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     );
   }
 
+  Widget _buildBullThrowScreen(BuildContext context) {
+    final currentPlayer = _pendingPlayers[_bullThrowPlayerIndex];
+    final allDone = _bullThrowScores.length == _pendingPlayers.length;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Throw for Bull'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => setState(() {
+            _bullThrowPhase = false;
+            _showSetup = true;
+          }),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            // Results so far
+            ..._pendingPlayers.map((p) {
+              final score = _bullThrowScores[p.uid];
+              final isCurrent = p.uid == currentPlayer.uid && !allDone;
+              return Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isCurrent
+                      ? AppColors.secondaryYellow.withOpacity(0.15)
+                      : AppColors.surfaceDark,
+                  border: isCurrent
+                      ? Border.all(color: AppColors.secondaryYellow, width: 2)
+                      : null,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        p.displayName,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                          color: isCurrent ? AppColors.secondaryYellow : AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    if (score != null)
+                      Text(
+                        _bullScoreLabel(score),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: score == 50
+                              ? AppColors.secondaryYellow
+                              : score == 25
+                                  ? Colors.green
+                                  : AppColors.textSecondary,
+                        ),
+                      )
+                    else if (isCurrent)
+                      const Text('Throwing...', style: TextStyle(color: AppColors.textMuted)),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 24),
+
+            if (!allDone) ...[
+              Text(
+                '${currentPlayer.displayName}, throw for the bull!',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.secondaryYellow,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Enter the score of your dart',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: [
+                  _BullScoreButton(label: 'Bull (50)', score: 50, color: AppColors.secondaryYellow, onTap: () => _submitBullThrow(50)),
+                  _BullScoreButton(label: 'Outer (25)', score: 25, color: Colors.green, onTap: () => _submitBullThrow(25)),
+                  _BullScoreButton(label: '20', score: 20, color: AppColors.textSecondary, onTap: () => _submitBullThrow(20)),
+                  _BullScoreButton(label: '5', score: 5, color: AppColors.textSecondary, onTap: () => _submitBullThrow(5)),
+                  _BullScoreButton(label: '1', score: 1, color: AppColors.textSecondary, onTap: () => _submitBullThrow(1)),
+                  _BullScoreButton(label: '12', score: 12, color: AppColors.textSecondary, onTap: () => _submitBullThrow(12)),
+                  _BullScoreButton(label: '18', score: 18, color: AppColors.textSecondary, onTap: () => _submitBullThrow(18)),
+                  _BullScoreButton(label: '0 (Miss)', score: 0, color: AppColors.error, onTap: () => _submitBullThrow(0)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => _showCustomBullScore(context),
+                child: const Text('Enter other score'),
+              ),
+            ] else ...[
+              const SizedBox(height: 16),
+              _buildBullResults(),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _finishBullThrow,
+                child: const Text('START GAME'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _bullScoreLabel(int score) {
+    if (score == 50) return 'BULL (50)';
+    if (score == 25) return 'Outer (25)';
+    return '$score';
+  }
+
+  void _submitBullThrow(int score) {
+    setState(() {
+      _bullThrowScores[_pendingPlayers[_bullThrowPlayerIndex].uid] = score;
+      if (_bullThrowPlayerIndex < _pendingPlayers.length - 1) {
+        _bullThrowPlayerIndex++;
+      }
+    });
+  }
+
+  Future<void> _showCustomBullScore(BuildContext context) async {
+    final controller = TextEditingController();
+    final result = await showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Enter Score'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: '0–60'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final val = int.tryParse(controller.text) ?? -1;
+              if (val >= 0 && val <= 60) Navigator.pop(ctx, val);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    if (result != null) _submitBullThrow(result);
+  }
+
+  Widget _buildBullResults() {
+    final sorted = List<GamePlayer>.from(_pendingPlayers);
+    sorted.sort((a, b) {
+      final distA = (50 - _bullThrowScores[a.uid]!).abs();
+      final distB = (50 - _bullThrowScores[b.uid]!).abs();
+      return distA.compareTo(distB);
+    });
+
+    return Column(
+      children: [
+        Text(
+          '${sorted.first.displayName} is closest to the bull!',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: AppColors.secondaryYellow,
+                fontWeight: FontWeight.bold,
+              ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${sorted.first.displayName} throws first',
+          style: Theme.of(context).textTheme.bodyMedium,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  void _finishBullThrow() {
+    final sorted = List<GamePlayer>.from(_pendingPlayers);
+    sorted.sort((a, b) {
+      final distA = (50 - _bullThrowScores[a.uid]!).abs();
+      final distB = (50 - _bullThrowScores[b.uid]!).abs();
+      return distA.compareTo(distB);
+    });
+
+    List<GamePlayer> orderedPlayers;
+    List<List<String>>? orderedTeams = _pendingTeams;
+
+    if (_gameMode == GameMode.singles) {
+      orderedPlayers = sorted;
+    } else {
+      final winnerId = sorted.first.uid;
+      int winnerTeamIdx = 0;
+      if (_pendingTeams != null) {
+        for (int i = 0; i < _pendingTeams!.length; i++) {
+          if (_pendingTeams![i].contains(winnerId)) {
+            winnerTeamIdx = i;
+            break;
+          }
+        }
+      }
+      if (winnerTeamIdx == 1) {
+        orderedPlayers = [
+          _pendingPlayers[1],
+          _pendingPlayers[0],
+          _pendingPlayers[3],
+          _pendingPlayers[2],
+        ];
+        if (_pendingTeams != null) {
+          orderedTeams = [_pendingTeams![1], _pendingTeams![0]];
+        }
+      } else {
+        orderedPlayers = _pendingPlayers;
+      }
+    }
+
+    _launchGame(orderedPlayers, orderedTeams);
+  }
+
   void _confirmStopGame(BuildContext context) {
     showDialog(
       context: context,
@@ -551,6 +829,32 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) => TurnHistory(turns: currentLeg.turns, players: players),
+    );
+  }
+}
+
+class _BullScoreButton extends StatelessWidget {
+  final String label;
+  final int score;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _BullScoreButton({
+    required this.label,
+    required this.score,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: color),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      ),
+      child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
     );
   }
 }
