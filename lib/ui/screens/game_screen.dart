@@ -501,6 +501,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       Future.microtask(() async {
         await ref.read(statsServiceProvider).updateStatsAfterGame(game: game);
         ref.invalidate(playerStatsProvider);
+        await ref.read(leaderboardServiceProvider).clearCache();
         ref.invalidate(leaderboardProvider);
       });
     }
