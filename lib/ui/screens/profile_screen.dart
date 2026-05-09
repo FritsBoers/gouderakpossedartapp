@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/user_model.dart';
+import '../../models/leaderboard_entry.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/stats_provider.dart';
+import '../../providers/leaderboard_provider.dart';
 import '../widgets/stats_chart.dart';
 
 /// Profile screen showing user info, stats, and account actions.
@@ -156,6 +158,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   user.email,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
+                const SizedBox(height: 16),
+
+                // Badges
+                _BadgesSection(uid: user.uid),
                 const SizedBox(height: 24),
 
                 // Stats
@@ -377,4 +383,92 @@ class _StatRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Shows badge icons for every leaderboard category where the user is top 3.
+class _BadgesSection extends ConsumerWidget {
+  final String uid;
+  const _BadgesSection({required this.uid});
+
+  static const _badgeCategories = LeaderboardCategory.values;
+
+  static const _rankColors = <int, Color>{
+    1: AppColors.secondaryYellow,
+    2: Color(0xFFC0C0C0),
+    3: Color(0xFFCD7F32),
+  };
+
+  static const _rankLabels = <int, String>{
+    1: '1st',
+    2: '2nd',
+    3: '3rd',
+  };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Collect badges from all categories
+    final badges = <_Badge>[];
+    for (final cat in _badgeCategories) {
+      final lb = ref.watch(leaderboardProvider(cat));
+      lb.whenData((entries) {
+        for (final entry in entries) {
+          if (entry.uid == uid && entry.rank <= 3) {
+            badges.add(_Badge(
+              category: cat,
+              rank: entry.rank,
+            ));
+          }
+        }
+      });
+    }
+
+    if (badges.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        Text('Badges', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children: badges.map((badge) {
+            final color = _rankColors[badge.rank] ?? AppColors.textMuted;
+            return Tooltip(
+              message: '${_rankLabels[badge.rank]} in ${badge.category.displayName}',
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: color.withOpacity(0.4)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.emoji_events, color: color, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      badge.category.displayName,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+class _Badge {
+  final LeaderboardCategory category;
+  final int rank;
+  const _Badge({required this.category, required this.rank});
 }

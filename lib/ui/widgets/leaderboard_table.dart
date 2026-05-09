@@ -75,14 +75,16 @@ class _LeaderboardRow extends StatelessWidget {
           // Rank
           SizedBox(
             width: 32,
-            child: Text(
-              '#${entry.rank}',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: _rankColor,
-                fontSize: 16,
-              ),
-            ),
+            child: entry.rank <= 3
+                ? Icon(Icons.emoji_events, color: _rankColor, size: 22)
+                : Text(
+                    '#${entry.rank}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: _rankColor,
+                      fontSize: 16,
+                    ),
+                  ),
           ),
           const SizedBox(width: 12),
           // Avatar
