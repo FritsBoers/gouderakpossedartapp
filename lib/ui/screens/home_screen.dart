@@ -96,7 +96,7 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _ActionButton extends StatelessWidget {
+class _ActionButton extends StatefulWidget {
   final IconData icon;
   final String label;
   final String subtitle;
@@ -114,62 +114,88 @@ class _ActionButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final fgColor = textColor ?? Colors.white;
+  State<_ActionButton> createState() => _ActionButtonState();
+}
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(20),
-      child: Ink(
+class _ActionButtonState extends State<_ActionButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final fgColor = widget.textColor ?? Colors.white;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        transform: Matrix4.translationValues(0, _hovered ? -4 : 0, 0),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color, color.withOpacity(0.75)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
           borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: widget.color.withOpacity(_hovered ? 0.5 : 0.2),
+              blurRadius: _hovered ? 16 : 6,
+              offset: Offset(0, _hovered ? 8 : 2),
+            ),
+          ],
         ),
-        child: InkWell(
-          onTap: onTap,
+        child: Material(
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: fgColor.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(icon, color: fgColor, size: 28),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: TextStyle(
-                          color: fgColor,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
+          child: Ink(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [widget.color, widget.color.withOpacity(0.75)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: InkWell(
+              onTap: widget.onTap,
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: fgColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          color: fgColor.withOpacity(0.7),
-                          fontSize: 13,
-                        ),
+                      child: Icon(widget.icon, color: fgColor, size: 28),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.label,
+                            style: TextStyle(
+                              color: fgColor,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.subtitle,
+                            style: TextStyle(
+                              color: fgColor.withOpacity(0.7),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    Icon(Icons.chevron_right, color: fgColor.withOpacity(0.6)),
+                  ],
                 ),
-                Icon(Icons.chevron_right, color: fgColor.withOpacity(0.6)),
-              ],
+              ),
             ),
           ),
         ),
