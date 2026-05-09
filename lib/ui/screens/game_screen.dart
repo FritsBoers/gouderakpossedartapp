@@ -359,6 +359,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Leg ${gameState.currentLegIndex + 1}'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: 'Stop game',
+          onPressed: () => _confirmStopGame(context),
+        ),
         actions: [
           // Undo button
           IconButton(
@@ -495,6 +500,30 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _confirmStopGame(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Stop Game'),
+        content: const Text('Are you sure you want to stop the current game? All progress will be lost.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ref.read(activeGameProvider.notifier).resetGame();
+              setState(() => _showSetup = true);
+            },
+            child: const Text('STOP GAME'),
+          ),
+        ],
       ),
     );
   }
