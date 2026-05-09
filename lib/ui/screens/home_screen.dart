@@ -20,6 +20,14 @@ class HomeScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 24),
+              // Logo
+              Center(
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  height: 120,
+                ),
+              ),
+              const SizedBox(height: 16),
               // Header
               Text(
                 'GOUDERAK POSSE',
