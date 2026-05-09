@@ -85,13 +85,12 @@ class _ScoreInputState extends State<ScoreInput> {
             SizedBox(
               width: 48,
               height: 48,
-              child: _input.isNotEmpty
-                  ? IconButton(
-                      onPressed: _backspace,
-                      icon: const Icon(Icons.close, size: 28),
-                      color: AppColors.error,
-                    )
-                  : const SizedBox.shrink(),
+              child: IconButton(
+                onPressed: _input.isNotEmpty ? _backspace : null,
+                icon: const Icon(Icons.backspace_outlined, size: 28),
+                color: AppColors.error,
+                disabledColor: AppColors.textMuted.withOpacity(0.3),
+              ),
             ),
           ],
         ),
