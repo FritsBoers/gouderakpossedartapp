@@ -13,6 +13,9 @@ class StatsService {
     if (game.status != GameStatus.completed) return;
 
     for (final player in game.players) {
+      // Skip guest (non-registered) players — no Firestore doc to update
+      if (player.uid.startsWith('guest_')) continue;
+
       final userRef = _firestore.collection('users').doc(player.uid);
 
       await _firestore.runTransaction((transaction) async {

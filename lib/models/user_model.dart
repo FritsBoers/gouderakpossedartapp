@@ -6,7 +6,7 @@ class UserModel {
   final String displayName;
   final String? avatarUrl;
   final String email;
-  final String provider; // 'google' or 'email'
+  final String provider; // 'google', 'email', or 'guest'
   final bool emailVerified;
   final DateTime createdAt;
   final PlayerStats stats;
@@ -21,6 +21,22 @@ class UserModel {
     required this.createdAt,
     required this.stats,
   });
+
+  /// Whether this user is a guest (non-registered) player.
+  bool get isGuest => uid.startsWith('guest_');
+
+  /// Create a guest player with a generated UID.
+  factory UserModel.guest(String name) {
+    return UserModel(
+      uid: 'guest_${DateTime.now().microsecondsSinceEpoch}',
+      displayName: name,
+      email: '',
+      provider: 'guest',
+      emailVerified: false,
+      createdAt: DateTime.now(),
+      stats: const PlayerStats(),
+    );
+  }
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;

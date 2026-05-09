@@ -753,14 +753,45 @@ class _PlayerDropdown extends StatefulWidget {
 
 class _PlayerDropdownState extends State<_PlayerDropdown> {
   bool _isOpen = false;
+  bool _enteringGuest = false;
+  final _guestController = TextEditingController();
+  final _guestFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _guestController.dispose();
+    _guestFocus.dispose();
+    super.dispose();
+  }
+
+  void _submitGuest() {
+    final name = _guestController.text.trim();
+    if (name.isEmpty) return;
+    widget.onChanged(UserModel.guest(name));
+    setState(() {
+      _isOpen = false;
+      _enteringGuest = false;
+      _guestController.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Show guest label with icon if selected is a guest
+    final displayText = widget.selected != null
+        ? widget.selected!.isGuest
+            ? '${widget.selected!.displayName} (Guest)'
+            : widget.selected!.displayName
+        : widget.label;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         GestureDetector(
-          onTap: () => setState(() => _isOpen = !_isOpen),
+          onTap: () => setState(() {
+            _isOpen = !_isOpen;
+            if (!_isOpen) _enteringGuest = false;
+          }),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
@@ -773,7 +804,7 @@ class _PlayerDropdownState extends State<_PlayerDropdown> {
               children: [
                 Expanded(
                   child: Text(
-                    widget.selected?.displayName ?? widget.label,
+                    displayText,
                     style: TextStyle(
                       color: widget.selected != null
                           ? AppColors.textPrimary
@@ -809,35 +840,129 @@ class _PlayerDropdownState extends State<_PlayerDropdown> {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: widget.users.map((u) {
-                        final isSelected = widget.selected?.uid == u.uid;
-                        return Material(
-                          color: isSelected
-                              ? AppColors.secondaryYellow.withValues(alpha: 0.15)
-                              : Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              widget.onChanged(u);
-                              setState(() => _isOpen = false);
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                              child: Text(
-                                u.displayName,
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? AppColors.secondaryYellow
-                                      : AppColors.textPrimary,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
+                      children: [
+                        // Guest option
+                        if (!_enteringGuest)
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() => _enteringGuest = true);
+                                Future.delayed(const Duration(milliseconds: 100), () {
+                                  _guestFocus.requestFocus();
+                                });
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.person_add_alt_1,
+                                        size: 18, color: AppColors.textMuted),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Play as Guest',
+                                      style: TextStyle(
+                                        color: AppColors.textMuted,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
+                          )
+                        else
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: _guestController,
+                                    focusNode: _guestFocus,
+                                    style: const TextStyle(
+                                        color: AppColors.textPrimary),
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter guest name',
+                                      hintStyle: const TextStyle(
+                                          color: AppColors.textMuted),
+                                      isDense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 10),
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    onSubmitted: (_) => _submitGuest(),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  onPressed: _submitGuest,
+                                  icon: const Icon(Icons.check,
+                                      color: AppColors.success),
+                                  constraints: const BoxConstraints(
+                                      minWidth: 36, minHeight: 36),
+                                  padding: EdgeInsets.zero,
+                                ),
+                                IconButton(
+                                  onPressed: () => setState(() {
+                                    _enteringGuest = false;
+                                    _guestController.clear();
+                                  }),
+                                  icon: const Icon(Icons.close,
+                                      color: AppColors.textMuted),
+                                  constraints: const BoxConstraints(
+                                      minWidth: 36, minHeight: 36),
+                                  padding: EdgeInsets.zero,
+                                ),
+                              ],
+                            ),
                           ),
-                        );
-                      }).toList(),
+                        // Divider between guest option and user list
+                        Divider(
+                          height: 1,
+                          color: AppColors.textMuted.withValues(alpha: 0.2),
+                        ),
+                        // Registered users
+                        ...widget.users.map((u) {
+                          final isSelected = widget.selected?.uid == u.uid;
+                          return Material(
+                            color: isSelected
+                                ? AppColors.secondaryYellow
+                                    .withValues(alpha: 0.15)
+                                : Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                widget.onChanged(u);
+                                setState(() {
+                                  _isOpen = false;
+                                  _enteringGuest = false;
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                child: Text(
+                                  u.displayName,
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? AppColors.secondaryYellow
+                                        : AppColors.textPrimary,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
                     ),
                   )
                 : const SizedBox(width: double.infinity),
