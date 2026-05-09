@@ -77,10 +77,10 @@ class HomeScreen extends ConsumerWidget {
               const Spacer(),
 
               // Profile button
-              OutlinedButton.icon(
+              TextButton.icon(
                 onPressed: () => context.push('/profile'),
-                icon: const Icon(Icons.person),
-                label: const Text('Profile & Stats'),
+                icon: const Icon(Icons.person, size: 18),
+                label: const Text('Profile & Stats', style: TextStyle(fontSize: 13)),
               ),
             ],
           ),

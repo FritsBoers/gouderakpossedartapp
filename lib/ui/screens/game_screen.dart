@@ -519,7 +519,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             onPressed: () {
               Navigator.of(ctx).pop();
               ref.read(activeGameProvider.notifier).resetGame();
-              setState(() => _showSetup = true);
+              Navigator.of(context).pop();
             },
             child: const Text('STOP GAME'),
           ),
