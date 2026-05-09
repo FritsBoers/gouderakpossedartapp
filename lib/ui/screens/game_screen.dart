@@ -26,8 +26,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   bool _statsUpdated = false;
   bool _throwForBull = false;
   bool _bullThrowPhase = false;
-  int _bullThrowPlayerIndex = 0;
-  Map<String, int> _bullThrowScores = {};
   List<GamePlayer> _pendingPlayers = [];
   List<List<String>>? _pendingTeams;
   GameMode _gameMode = GameMode.singles;
@@ -93,8 +91,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       setState(() {
         _showSetup = false;
         _bullThrowPhase = true;
-        _bullThrowPlayerIndex = 0;
-        _bullThrowScores = {};
         _pendingPlayers = players;
         _pendingTeams = teams;
       });
@@ -575,12 +571,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   }
 
   Widget _buildBullThrowScreen(BuildContext context) {
-    final currentPlayer = _pendingPlayers[_bullThrowPlayerIndex];
-    final allDone = _bullThrowScores.length == _pendingPlayers.length;
+    // In teams mode, show team choices; in singles, show player choices
+    final isTeams = _gameMode == GameMode.teams && _pendingTeams != null;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Throw for Bull'),
+        title: const Text('Who Starts?'),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => setState(() {
@@ -593,195 +589,101 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            // Results so far
-            ..._pendingPlayers.map((p) {
-              final score = _bullThrowScores[p.uid];
-              final isCurrent = p.uid == currentPlayer.uid && !allDone;
-              return Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: isCurrent
-                      ? AppColors.secondaryYellow.withOpacity(0.15)
-                      : AppColors.surfaceDark,
-                  border: isCurrent
-                      ? Border.all(color: AppColors.secondaryYellow, width: 2)
-                      : null,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        p.displayName,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                          color: isCurrent ? AppColors.secondaryYellow : AppColors.textPrimary,
+            const Icon(Icons.gps_fixed, size: 48, color: AppColors.secondaryYellow),
+            const SizedBox(height: 16),
+            Text(
+              'Throw for the bull!',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.secondaryYellow,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isTeams
+                  ? 'Select the team that won the bull throw'
+                  : 'Select the player that won the bull throw',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            if (isTeams) ...[
+              _buildTeamOption(0),
+              const SizedBox(height: 12),
+              _buildTeamOption(1),
+            ] else
+              ..._pendingPlayers.map((p) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => _selectStarter(p.uid),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.secondaryYellow),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          p.displayName,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.secondaryYellow,
+                          ),
                         ),
                       ),
                     ),
-                    if (score != null)
-                      Text(
-                        _bullScoreLabel(score),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: score == 50
-                              ? AppColors.secondaryYellow
-                              : score == 25
-                                  ? Colors.green
-                                  : AppColors.textSecondary,
-                        ),
-                      )
-                    else if (isCurrent)
-                      const Text('Throwing...', style: TextStyle(color: AppColors.textMuted)),
-                  ],
-                ),
-              );
-            }),
-            const SizedBox(height: 24),
-
-            if (!allDone) ...[
-              Text(
-                '${currentPlayer.displayName}, throw for the bull!',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.secondaryYellow,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Enter the score of your dart',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
-                children: [
-                  _BullScoreButton(label: 'Bull (50)', score: 50, color: AppColors.secondaryYellow, onTap: () => _submitBullThrow(50)),
-                  _BullScoreButton(label: 'Outer (25)', score: 25, color: Colors.green, onTap: () => _submitBullThrow(25)),
-                  _BullScoreButton(label: '20', score: 20, color: AppColors.textSecondary, onTap: () => _submitBullThrow(20)),
-                  _BullScoreButton(label: '5', score: 5, color: AppColors.textSecondary, onTap: () => _submitBullThrow(5)),
-                  _BullScoreButton(label: '1', score: 1, color: AppColors.textSecondary, onTap: () => _submitBullThrow(1)),
-                  _BullScoreButton(label: '12', score: 12, color: AppColors.textSecondary, onTap: () => _submitBullThrow(12)),
-                  _BullScoreButton(label: '18', score: 18, color: AppColors.textSecondary, onTap: () => _submitBullThrow(18)),
-                  _BullScoreButton(label: '0 (Miss)', score: 0, color: AppColors.error, onTap: () => _submitBullThrow(0)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () => _showCustomBullScore(context),
-                child: const Text('Enter other score'),
-              ),
-            ] else ...[
-              const SizedBox(height: 16),
-              _buildBullResults(),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _finishBullThrow,
-                child: const Text('START GAME'),
-              ),
-            ],
+                  )),
           ],
         ),
       ),
     );
   }
 
-  String _bullScoreLabel(int score) {
-    if (score == 50) return 'BULL (50)';
-    if (score == 25) return 'Outer (25)';
-    return '$score';
-  }
+  Widget _buildTeamOption(int teamIdx) {
+    final teamPlayers = _pendingPlayers
+        .where((p) => _pendingTeams![teamIdx].contains(p.uid))
+        .map((p) => p.displayName)
+        .join(' & ');
 
-  void _submitBullThrow(int score) {
-    setState(() {
-      _bullThrowScores[_pendingPlayers[_bullThrowPlayerIndex].uid] = score;
-      if (_bullThrowPlayerIndex < _pendingPlayers.length - 1) {
-        _bullThrowPlayerIndex++;
-      }
-    });
-  }
-
-  Future<void> _showCustomBullScore(BuildContext context) async {
-    final controller = TextEditingController();
-    final result = await showDialog<int>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Enter Score'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: '0–60'),
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: () => _selectStarter(_pendingTeams![teamIdx].first),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.secondaryYellow),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+        child: Text(
+          teamPlayers,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.secondaryYellow,
           ),
-          TextButton(
-            onPressed: () {
-              final val = int.tryParse(controller.text) ?? -1;
-              if (val >= 0 && val <= 60) Navigator.pop(ctx, val);
-            },
-            child: const Text('OK'),
-          ),
-        ],
+        ),
       ),
     );
-    if (result != null) _submitBullThrow(result);
   }
 
-  Widget _buildBullResults() {
-    final sorted = List<GamePlayer>.from(_pendingPlayers);
-    sorted.sort((a, b) {
-      final distA = (50 - _bullThrowScores[a.uid]!).abs();
-      final distB = (50 - _bullThrowScores[b.uid]!).abs();
-      return distA.compareTo(distB);
-    });
-
-    return Column(
-      children: [
-        Text(
-          '${sorted.first.displayName} is closest to the bull!',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.secondaryYellow,
-                fontWeight: FontWeight.bold,
-              ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '${sorted.first.displayName} throws first',
-          style: Theme.of(context).textTheme.bodyMedium,
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  void _finishBullThrow() {
-    final sorted = List<GamePlayer>.from(_pendingPlayers);
-    sorted.sort((a, b) {
-      final distA = (50 - _bullThrowScores[a.uid]!).abs();
-      final distB = (50 - _bullThrowScores[b.uid]!).abs();
-      return distA.compareTo(distB);
-    });
-
+  void _selectStarter(String winnerId) {
     List<GamePlayer> orderedPlayers;
     List<List<String>>? orderedTeams = _pendingTeams;
 
     if (_gameMode == GameMode.singles) {
-      orderedPlayers = sorted;
+      // Put winner first
+      final winner = _pendingPlayers.firstWhere((p) => p.uid == winnerId);
+      orderedPlayers = [
+        winner,
+        ..._pendingPlayers.where((p) => p.uid != winnerId),
+      ];
     } else {
-      final winnerId = sorted.first.uid;
       int winnerTeamIdx = 0;
       if (_pendingTeams != null) {
         for (int i = 0; i < _pendingTeams!.length; i++) {
@@ -837,32 +739,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) => TurnHistory(turns: currentLeg.turns, players: players),
-    );
-  }
-}
-
-class _BullScoreButton extends StatelessWidget {
-  final String label;
-  final int score;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _BullScoreButton({
-    required this.label,
-    required this.score,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        side: BorderSide(color: color),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      ),
-      child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
     );
   }
 }
