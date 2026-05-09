@@ -46,7 +46,11 @@ class _ScoreInputState extends State<ScoreInput> {
     if (!GameConstants.isPossibleTurnScore(score)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$score is not a valid 3-dart score'),
+          content: Text(
+            '$score is not a valid 3-dart score',
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: AppColors.error,
           duration: const Duration(seconds: 2),
         ),
       );
