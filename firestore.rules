@@ -53,8 +53,8 @@ service cloud.firestore {
       allow update: if isVerified()
         && request.auth.uid in resource.data.playerIds;
 
-      // No deletion of games (preserve history)
-      allow delete: if false;
+      // Authenticated users can delete games (for reset)
+      allow delete: if isAuth();
     }
 
     // Leaderboards (cached aggregations)

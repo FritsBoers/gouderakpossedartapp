@@ -267,18 +267,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         final firestore = FirebaseFirestore.instance;
         // Delete all games
         final games = await firestore.collection('games').get();
-        final batch = firestore.batch();
-        for (final doc in games.docs) {
-          batch.delete(doc.reference);
+        // Batch delete in chunks of 500 (Firestore limit)
+        for (var i = 0; i < games.docs.length; i += 500) {
+          final batch = firestore.batch();
+          final chunk = games.docs.skip(i).take(500);
+          for (final doc in chunk) {
+            batch.delete(doc.reference);
+          }
+          await batch.commit();
         }
-        if (games.docs.isNotEmpty) await batch.commit();
 
-        // Reset current user's stats
-        final user = ref.read(authServiceProvider).currentUser;
-        if (user != null) {
-          await firestore.collection('users').doc(user.uid).update({
-            'stats': const PlayerStats().toMap(),
-          });
+        // Reset all users' stats
+        final users = await firestore.collection('users').get();
+        for (var i = 0; i < users.docs.length; i += 500) {
+          final batch = firestore.batch();
+          final chunk = users.docs.skip(i).take(500);
+          for (final doc in chunk) {
+            batch.update(doc.reference, {'stats': const PlayerStats().toMap()});
+          }
+          await batch.commit();
         }
 
         ref.invalidate(currentUserProvider);
