@@ -1,4 +1,5 @@
 import '../constants/game_constants.dart';
+import '../../models/game_model.dart';
 
 /// Result of score validation.
 class ScoreValidation {
@@ -22,11 +23,15 @@ class ScoreValidator {
   ScoreValidator._();
 
   /// Validate a turn score against the player's remaining score.
-  /// Enforces double-out rules.
+  /// Supports configurable entry/exit rules.
   static ScoreValidation validateTurn({
     required int turnScore,
     required int remainingScore,
     required bool lastDartDouble,
+    bool firstDartDouble = false,
+    EntryRule entryRule = EntryRule.straightIn,
+    ExitRule exitRule = ExitRule.doubleOut,
+    bool hasOpenedScoring = true,
   }) {
     // Check turn score is in valid range
     if (turnScore < 0 || turnScore > GameConstants.maxTurnScore) {
@@ -44,6 +49,17 @@ class ScoreValidator {
       );
     }
 
+    // Double-in rule: if player hasn't opened scoring yet, first dart must be double
+    if (entryRule == EntryRule.doubleIn && !hasOpenedScoring) {
+      if (!firstDartDouble) {
+        // Entire turn is wasted — score doesn't count
+        return const ScoreValidation(
+          isValid: true,
+          isBust: true,
+        );
+      }
+    }
+
     final newRemaining = remainingScore - turnScore;
 
     // Bust: score goes below 0
@@ -54,26 +70,36 @@ class ScoreValidator {
       );
     }
 
-    // Bust: score goes to exactly 1 (can't finish with double)
-    if (newRemaining == 1) {
-      return const ScoreValidation(
-        isValid: true,
-        isBust: true,
-      );
-    }
-
-    // Checkout: score reaches 0 — must finish on a double
-    if (newRemaining == 0) {
-      if (!lastDartDouble) {
+    if (exitRule == ExitRule.doubleOut) {
+      // Bust: score goes to exactly 1 (can't finish with double)
+      if (newRemaining == 1) {
         return const ScoreValidation(
           isValid: true,
           isBust: true,
         );
       }
-      return const ScoreValidation(
-        isValid: true,
-        isCheckout: true,
-      );
+
+      // Checkout: score reaches 0 — must finish on a double
+      if (newRemaining == 0) {
+        if (!lastDartDouble) {
+          return const ScoreValidation(
+            isValid: true,
+            isBust: true,
+          );
+        }
+        return const ScoreValidation(
+          isValid: true,
+          isCheckout: true,
+        );
+      }
+    } else {
+      // Straight out: just reach 0
+      if (newRemaining == 0) {
+        return const ScoreValidation(
+          isValid: true,
+          isCheckout: true,
+        );
+      }
     }
 
     return ScoreValidation.valid;

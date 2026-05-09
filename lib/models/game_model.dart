@@ -3,6 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// Status of a darts game.
 enum GameStatus { waiting, inProgress, completed, cancelled }
 
+/// Game mode: singles (1v1) or teams (2v2).
+enum GameMode { singles, teams }
+
+/// Format: "best of" means you need more than half; "first to" means reach exactly N.
+enum GameFormat { bestOf, firstTo }
+
+/// Entry/exit rule.
+enum EntryRule { straightIn, doubleIn }
+enum ExitRule { straightOut, doubleOut }
+
 /// Represents a single dart throw.
 class DartThrow {
   final int score;
@@ -137,11 +147,13 @@ class GamePlayer {
   final String uid;
   final String displayName;
   final int legsWon;
+  final int setsWon;
 
   const GamePlayer({
     required this.uid,
     required this.displayName,
     this.legsWon = 0,
+    this.setsWon = 0,
   });
 
   factory GamePlayer.fromMap(Map<String, dynamic> map) {
@@ -149,6 +161,7 @@ class GamePlayer {
       uid: map['uid'] ?? '',
       displayName: map['displayName'] ?? '',
       legsWon: map['legsWon'] ?? 0,
+      setsWon: map['setsWon'] ?? 0,
     );
   }
 
@@ -157,14 +170,16 @@ class GamePlayer {
       'uid': uid,
       'displayName': displayName,
       'legsWon': legsWon,
+      'setsWon': setsWon,
     };
   }
 
-  GamePlayer copyWith({int? legsWon}) {
+  GamePlayer copyWith({int? legsWon, int? setsWon}) {
     return GamePlayer(
       uid: uid,
       displayName: displayName,
       legsWon: legsWon ?? this.legsWon,
+      setsWon: setsWon ?? this.setsWon,
     );
   }
 }
@@ -177,6 +192,12 @@ class GameModel {
   final List<String> playerIds;
   final int startingScore;
   final int legsToWin;
+  final int setsToWin; // 0 means no sets (legs only)
+  final GameMode gameMode;
+  final GameFormat gameFormat;
+  final EntryRule entryRule;
+  final ExitRule exitRule;
+  final List<List<String>>? teams; // team UIDs, e.g. [[uid1,uid2],[uid3,uid4]]
   final GameStatus status;
   final String currentPlayerId;
   final List<Leg> legs;
@@ -192,6 +213,12 @@ class GameModel {
     required this.playerIds,
     this.startingScore = 501,
     this.legsToWin = 3,
+    this.setsToWin = 0,
+    this.gameMode = GameMode.singles,
+    this.gameFormat = GameFormat.bestOf,
+    this.entryRule = EntryRule.straightIn,
+    this.exitRule = ExitRule.doubleOut,
+    this.teams,
     this.status = GameStatus.waiting,
     required this.currentPlayerId,
     this.legs = const [],
@@ -213,6 +240,26 @@ class GameModel {
       playerIds: List<String>.from(data['playerIds'] ?? []),
       startingScore: data['startingScore'] ?? 501,
       legsToWin: data['legsToWin'] ?? 3,
+      setsToWin: data['setsToWin'] ?? 0,
+      gameMode: GameMode.values.firstWhere(
+        (m) => m.name == data['gameMode'],
+        orElse: () => GameMode.singles,
+      ),
+      gameFormat: GameFormat.values.firstWhere(
+        (f) => f.name == data['gameFormat'],
+        orElse: () => GameFormat.bestOf,
+      ),
+      entryRule: EntryRule.values.firstWhere(
+        (r) => r.name == data['entryRule'],
+        orElse: () => EntryRule.straightIn,
+      ),
+      exitRule: ExitRule.values.firstWhere(
+        (r) => r.name == data['exitRule'],
+        orElse: () => ExitRule.doubleOut,
+      ),
+      teams: (data['teams'] as List<dynamic>?)
+              ?.map((t) => List<String>.from(t as List))
+              .toList(),
       status: GameStatus.values.firstWhere(
         (s) => s.name == data['status'],
         orElse: () => GameStatus.waiting,
@@ -237,6 +284,12 @@ class GameModel {
       'playerIds': playerIds,
       'startingScore': startingScore,
       'legsToWin': legsToWin,
+      'setsToWin': setsToWin,
+      'gameMode': gameMode.name,
+      'gameFormat': gameFormat.name,
+      'entryRule': entryRule.name,
+      'exitRule': exitRule.name,
+      'teams': teams,
       'status': status.name,
       'currentPlayerId': currentPlayerId,
       'legs': legs.map((l) => l.toMap()).toList(),
@@ -264,6 +317,12 @@ class GameModel {
       playerIds: playerIds ?? this.playerIds,
       startingScore: startingScore,
       legsToWin: legsToWin,
+      setsToWin: setsToWin,
+      gameMode: gameMode,
+      gameFormat: gameFormat,
+      entryRule: entryRule,
+      exitRule: exitRule,
+      teams: teams,
       status: status ?? this.status,
       currentPlayerId: currentPlayerId ?? this.currentPlayerId,
       legs: legs ?? this.legs,
@@ -272,5 +331,14 @@ class GameModel {
       createdAt: createdAt,
       completedAt: completedAt ?? this.completedAt,
     );
+  }
+
+  /// Helper: get team index for a player (0 or 1), or -1 if not teams mode.
+  int teamIndexOf(String playerId) {
+    if (teams == null) return -1;
+    for (int i = 0; i < teams!.length; i++) {
+      if (teams![i].contains(playerId)) return i;
+    }
+    return -1;
   }
 }

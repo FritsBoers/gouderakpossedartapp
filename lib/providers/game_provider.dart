@@ -50,6 +50,12 @@ class ActiveGameNotifier extends StateNotifier<ActiveGameState> {
     required List<GamePlayer> players,
     int startingScore = 501,
     int legsToWin = 3,
+    int setsToWin = 0,
+    GameMode gameMode = GameMode.singles,
+    GameFormat gameFormat = GameFormat.bestOf,
+    EntryRule entryRule = EntryRule.straightIn,
+    ExitRule exitRule = ExitRule.doubleOut,
+    List<List<String>>? teams,
   }) {
     final playerIds = players.map((p) => p.uid).toList();
     final game = GameModel(
@@ -59,6 +65,12 @@ class ActiveGameNotifier extends StateNotifier<ActiveGameState> {
       playerIds: playerIds,
       startingScore: startingScore,
       legsToWin: legsToWin,
+      setsToWin: setsToWin,
+      gameMode: gameMode,
+      gameFormat: gameFormat,
+      entryRule: entryRule,
+      exitRule: exitRule,
+      teams: teams,
       status: GameStatus.inProgress,
       currentPlayerId: players.first.uid,
       legs: [
@@ -87,6 +99,7 @@ class ActiveGameNotifier extends StateNotifier<ActiveGameState> {
   void submitTurn({
     required int turnScore,
     required bool lastDartDouble,
+    bool firstDartDouble = false,
     List<DartThrow>? darts,
   }) {
     final game = state.game;
@@ -96,11 +109,19 @@ class ActiveGameNotifier extends StateNotifier<ActiveGameState> {
     final playerId = game.currentPlayerId;
     final remaining = currentLeg.playerScores[playerId] ?? 0;
 
+    // Check if player has opened scoring (for double-in rule)
+    final hasOpenedScoring = game.entryRule == EntryRule.straightIn ||
+        remaining < game.startingScore;
+
     // Validate the turn
     final validation = ScoreValidator.validateTurn(
       turnScore: turnScore,
       remainingScore: remaining,
       lastDartDouble: lastDartDouble,
+      firstDartDouble: firstDartDouble,
+      entryRule: game.entryRule,
+      exitRule: game.exitRule,
+      hasOpenedScoring: hasOpenedScoring,
     );
 
     if (!validation.isValid) {
@@ -149,9 +170,57 @@ class ActiveGameNotifier extends StateNotifier<ActiveGameState> {
       }).toList();
     }
 
-    // Check if game is won
+    // Determine the winning entity (player or team)
     final legWinner = updatedPlayers.firstWhere((p) => p.uid == playerId);
-    final isGameWon = isLegWon && legWinner.legsWon >= game.legsToWin;
+
+    // In teams mode, count combined legs for the team
+    int teamLegsWon = legWinner.legsWon;
+    if (game.gameMode == GameMode.teams && game.teams != null) {
+      final teamIdx = game.teamIndexOf(playerId);
+      if (teamIdx >= 0) {
+        teamLegsWon = updatedPlayers
+            .where((p) => game.teams![teamIdx].contains(p.uid))
+            .fold(0, (sum, p) => sum + p.legsWon);
+      }
+    }
+
+    bool isSetWon = false;
+    bool isGameWon = false;
+
+    if (game.setsToWin > 0) {
+      // Sets mode: check if enough legs won for a set
+      isSetWon = isLegWon && teamLegsWon >= game.legsToWin;
+      if (isSetWon) {
+        // Award set and reset legs
+        updatedPlayers = updatedPlayers.map((p) {
+          if (game.gameMode == GameMode.teams && game.teams != null) {
+            final teamIdx = game.teamIndexOf(p.uid);
+            final winnerTeamIdx = game.teamIndexOf(playerId);
+            if (teamIdx == winnerTeamIdx) {
+              return p.copyWith(setsWon: p.setsWon + 1, legsWon: 0);
+            }
+          } else if (p.uid == playerId) {
+            return p.copyWith(setsWon: p.setsWon + 1, legsWon: 0);
+          }
+          return p.copyWith(legsWon: 0); // Reset legs for all on new set
+        }).toList();
+
+        // Check if game is won by sets
+        final setWinner = updatedPlayers.firstWhere((p) => p.uid == playerId);
+        int teamSetsWon = setWinner.setsWon;
+        if (game.gameMode == GameMode.teams && game.teams != null) {
+          final teamIdx = game.teamIndexOf(playerId);
+          if (teamIdx >= 0) {
+            // In teams, setsWon is tracked per-player but identical for teammates
+            teamSetsWon = setWinner.setsWon;
+          }
+        }
+        isGameWon = teamSetsWon >= game.setsToWin;
+      }
+    } else {
+      // No sets — game won by legs directly
+      isGameWon = isLegWon && teamLegsWon >= game.legsToWin;
+    }
 
     // If leg won but game continues, start new leg
     int newLegIndex = state.currentLegIndex;
@@ -170,6 +239,7 @@ class ActiveGameNotifier extends StateNotifier<ActiveGameState> {
         ? game.playerIds.first // Reset to first player on new leg
         : game.playerIds[(currentIndex + 1) % game.playerIds.length];
 
+    // Determine winnerId: in teams mode, use the player who won the last leg
     final updatedGame = game.copyWith(
       players: updatedPlayers,
       legs: updatedLegs,
