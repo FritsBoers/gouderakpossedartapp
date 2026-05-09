@@ -424,13 +424,16 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.15),
+                color: AppColors.error.withOpacity(0.85),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Text(
                 gameState.errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.error),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
 
