@@ -442,16 +442,24 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           Container(
             width: double.infinity,
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.primaryRed.withOpacity(0.15),
+              color: AppColors.secondaryYellow,
               borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.secondaryYellow.withOpacity(0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Text(
               '${currentPlayer.displayName}\'s turn',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.secondaryYellow,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
                   ),
             ),
           ),
