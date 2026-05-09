@@ -16,6 +16,14 @@ class GouderakDartsApp extends ConsumerWidget {
       theme: AppTheme.darkTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+      builder: (context, child) {
+        return Center(
+          child: FractionallySizedBox(
+            widthFactor: 0.6,
+            child: child,
+          ),
+        );
+      },
     );
   }
 }
