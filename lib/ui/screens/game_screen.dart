@@ -838,9 +838,12 @@ class _PlayerDropdownState extends State<_PlayerDropdown> {
                       ),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 250),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
                         // Guest option
                         if (!_enteringGuest)
                           Material(
@@ -928,41 +931,49 @@ class _PlayerDropdownState extends State<_PlayerDropdown> {
                           height: 1,
                           color: AppColors.textMuted.withValues(alpha: 0.2),
                         ),
-                        // Registered users
-                        ...widget.users.map((u) {
-                          final isSelected = widget.selected?.uid == u.uid;
-                          return Material(
-                            color: isSelected
-                                ? AppColors.secondaryYellow
-                                    .withValues(alpha: 0.15)
-                                : Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                widget.onChanged(u);
-                                setState(() {
-                                  _isOpen = false;
-                                  _enteringGuest = false;
-                                });
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 12),
-                                child: Text(
-                                  u.displayName,
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? AppColors.secondaryYellow
-                                        : AppColors.textPrimary,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w600
-                                        : FontWeight.normal,
+                        // Registered users (scrollable)
+                        Flexible(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: widget.users.map((u) {
+                                final isSelected = widget.selected?.uid == u.uid;
+                                return Material(
+                                  color: isSelected
+                                      ? AppColors.secondaryYellow
+                                          .withValues(alpha: 0.15)
+                                      : Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      widget.onChanged(u);
+                                      setState(() {
+                                        _isOpen = false;
+                                        _enteringGuest = false;
+                                      });
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 12),
+                                      child: Text(
+                                        u.displayName,
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? AppColors.secondaryYellow
+                                              : AppColors.textPrimary,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
+                                );
+                              }).toList(),
                             ),
-                          );
-                        }),
+                          ),
+                        ),
                       ],
+                    ),
                     ),
                   )
                 : const SizedBox(width: double.infinity),
