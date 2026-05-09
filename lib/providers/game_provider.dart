@@ -256,6 +256,48 @@ class ActiveGameNotifier extends StateNotifier<ActiveGameState> {
     );
   }
 
+  /// Undo the last submitted turn.
+  void undoLastTurn() {
+    final game = state.game;
+    if (game == null || game.status != GameStatus.inProgress) return;
+
+    final currentLeg = game.legs[state.currentLegIndex];
+    if (currentLeg.turns.isEmpty) return;
+
+    final lastTurn = currentLeg.turns.last;
+    final lastPlayerId = lastTurn.playerId;
+
+    // Restore the score
+    final updatedScores = Map<String, int>.from(currentLeg.playerScores);
+    if (!lastTurn.isBust) {
+      updatedScores[lastPlayerId] =
+          (updatedScores[lastPlayerId] ?? 0) + lastTurn.totalScore;
+    }
+
+    final updatedTurns = List<Turn>.from(currentLeg.turns)..removeLast();
+
+    final updatedLeg = currentLeg.copyWith(
+      turns: updatedTurns,
+      playerScores: updatedScores,
+      winnerId: null,
+      isComplete: false,
+    );
+
+    var updatedLegs = List<Leg>.from(game.legs);
+    updatedLegs[state.currentLegIndex] = updatedLeg;
+
+    final updatedGame = game.copyWith(
+      legs: updatedLegs,
+      currentPlayerId: lastPlayerId,
+    );
+
+    state = ActiveGameState(
+      game: updatedGame,
+      currentLegIndex: state.currentLegIndex,
+      errorMessage: null,
+    );
+  }
+
   /// Get the current player's remaining score.
   int get currentRemainingScore {
     final game = state.game;

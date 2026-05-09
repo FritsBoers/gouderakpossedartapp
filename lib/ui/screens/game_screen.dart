@@ -356,10 +356,28 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     final currentPlayer = game.players.firstWhere((p) => p.uid == currentPlayerId);
     final remaining = currentLeg.playerScores[currentPlayerId] ?? 0;
 
+    // Calculate stats for current player in this leg
+    final playerTurns =
+        currentLeg.turns.where((t) => t.playerId == currentPlayerId).toList();
+    final dartCount = playerTurns.length * 3;
+    final lastScore = playerTurns.isNotEmpty ? playerTurns.last.totalScore : 0;
+    final totalScored =
+        playerTurns.fold<int>(0, (sum, t) => sum + (t.isBust ? 0 : t.totalScore));
+    final avg3Dart =
+        playerTurns.isNotEmpty ? (totalScored / playerTurns.length) : 0.0;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Leg ${gameState.currentLegIndex + 1}'),
         actions: [
+          // Undo button
+          IconButton(
+            icon: const Icon(Icons.undo),
+            tooltip: 'Undo last score',
+            onPressed: currentLeg.turns.isNotEmpty
+                ? () => ref.read(activeGameProvider.notifier).undoLastTurn()
+                : null,
+          ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () => _showHistory(context, currentLeg),
@@ -386,6 +404,19 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: AppColors.secondaryYellow,
                   ),
+            ),
+          ),
+
+          // In-game stats
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _StatChip(label: 'Darts', value: '$dartCount'),
+                _StatChip(label: 'Last', value: '$lastScore'),
+                _StatChip(label: 'Avg', value: avg3Dart.toStringAsFixed(1)),
+              ],
             ),
           ),
 
@@ -490,6 +521,34 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) => TurnHistory(turns: currentLeg.turns),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _StatChip({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textMuted,
+              ),
+        ),
+      ],
     );
   }
 }

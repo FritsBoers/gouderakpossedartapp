@@ -67,18 +67,33 @@ class _ScoreInputState extends State<ScoreInput> {
 
     return Column(
       children: [
-        // Score display
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Text(
-            _input.isEmpty ? '0' : _input,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                  color: AppColors.textPrimary,
-                  fontSize: 56,
-                ),
-          ),
+        // Score display with backspace button
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(width: 48), // Balance the row
+            Expanded(
+              child: Text(
+                _input.isEmpty ? '0' : _input,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      color: AppColors.textPrimary,
+                      fontSize: 56,
+                    ),
+              ),
+            ),
+            SizedBox(
+              width: 48,
+              height: 48,
+              child: _input.isNotEmpty
+                  ? IconButton(
+                      onPressed: _backspace,
+                      icon: const Icon(Icons.close, size: 28),
+                      color: AppColors.error,
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
         ),
 
         // Double-out toggle (shown when in checkout range)
@@ -167,7 +182,7 @@ class _ScoreInputState extends State<ScoreInput> {
             child: Padding(
               padding: const EdgeInsets.all(4),
               child: _NumpadButton(
-                label: '→',
+                label: 'Submit',
                 color: AppColors.primaryRed,
                 onTap: _submit,
               ),
