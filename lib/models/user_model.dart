@@ -90,6 +90,12 @@ class PlayerStats {
   final int totalLegsWon;
   final int highestFinish;
   final double averageScore;
+  final int total180s;
+  final int totalTonPlus;
+  final int totalBusts;
+  final int totalCheckouts;
+  final int totalCheckoutAttempts;
+  final int totalComebacks;
 
   const PlayerStats({
     this.totalWins = 0,
@@ -97,6 +103,12 @@ class PlayerStats {
     this.totalLegsWon = 0,
     this.highestFinish = 0,
     this.averageScore = 0.0,
+    this.total180s = 0,
+    this.totalTonPlus = 0,
+    this.totalBusts = 0,
+    this.totalCheckouts = 0,
+    this.totalCheckoutAttempts = 0,
+    this.totalComebacks = 0,
   });
 
   factory PlayerStats.fromMap(Map<String, dynamic> map) {
@@ -106,6 +118,12 @@ class PlayerStats {
       totalLegsWon: map['totalLegsWon'] ?? 0,
       highestFinish: map['highestFinish'] ?? 0,
       averageScore: (map['averageScore'] ?? 0.0).toDouble(),
+      total180s: map['total180s'] ?? 0,
+      totalTonPlus: map['totalTonPlus'] ?? 0,
+      totalBusts: map['totalBusts'] ?? 0,
+      totalCheckouts: map['totalCheckouts'] ?? 0,
+      totalCheckoutAttempts: map['totalCheckoutAttempts'] ?? 0,
+      totalComebacks: map['totalComebacks'] ?? 0,
     );
   }
 
@@ -116,6 +134,12 @@ class PlayerStats {
       'totalLegsWon': totalLegsWon,
       'highestFinish': highestFinish,
       'averageScore': averageScore,
+      'total180s': total180s,
+      'totalTonPlus': totalTonPlus,
+      'totalBusts': totalBusts,
+      'totalCheckouts': totalCheckouts,
+      'totalCheckoutAttempts': totalCheckoutAttempts,
+      'totalComebacks': totalComebacks,
     };
   }
 
@@ -125,6 +149,12 @@ class PlayerStats {
     int? totalLegsWon,
     int? highestFinish,
     double? averageScore,
+    int? total180s,
+    int? totalTonPlus,
+    int? totalBusts,
+    int? totalCheckouts,
+    int? totalCheckoutAttempts,
+    int? totalComebacks,
   }) {
     return PlayerStats(
       totalWins: totalWins ?? this.totalWins,
@@ -132,6 +162,12 @@ class PlayerStats {
       totalLegsWon: totalLegsWon ?? this.totalLegsWon,
       highestFinish: highestFinish ?? this.highestFinish,
       averageScore: averageScore ?? this.averageScore,
+      total180s: total180s ?? this.total180s,
+      totalTonPlus: totalTonPlus ?? this.totalTonPlus,
+      totalBusts: totalBusts ?? this.totalBusts,
+      totalCheckouts: totalCheckouts ?? this.totalCheckouts,
+      totalCheckoutAttempts: totalCheckoutAttempts ?? this.totalCheckoutAttempts,
+      totalComebacks: totalComebacks ?? this.totalComebacks,
     );
   }
 }

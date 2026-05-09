@@ -49,6 +49,10 @@ class _LeaderboardRow extends StatelessWidget {
     if (category == LeaderboardCategory.highestAverage) {
       return (entry.value as num).toDouble().toStringAsFixed(1);
     }
+    if (category == LeaderboardCategory.winRate ||
+        category == LeaderboardCategory.checkoutPercentage) {
+      return '${(entry.value as num).toDouble().toStringAsFixed(1)}%';
+    }
     return '${entry.value}';
   }
 
