@@ -10,6 +10,7 @@ import '../../providers/leaderboard_provider.dart';
 import '../../models/leaderboard_entry.dart';
 import '../../core/utils/checkout_suggestions.dart';
 import '../widgets/badge_celebration.dart';
+import '../widgets/confetti_overlay.dart';
 import '../widgets/score_input.dart';
 import '../widgets/scoreboard.dart';
 import '../widgets/checkout_suggestion.dart';
@@ -565,15 +566,16 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       winnerLabel = winner.displayName;
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Game Over')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.emoji_events, size: 80, color: AppColors.secondaryYellow),
+    return ConfettiOverlay(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Game Over')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.emoji_events, size: 80, color: AppColors.secondaryYellow),
               const SizedBox(height: 24),
               Text(
                 '$winnerLabel wins!',
@@ -606,6 +608,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }
