@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
-import '../../services/tts_service.dart';
 
 /// The 21 targets: D1–D20 then D-Bull.
 const _targets = [
@@ -64,12 +63,6 @@ class _DoublesTrainingScreenState extends ConsumerState<DoublesTrainingScreen> {
   void _recordHit() {
     _totalDarts++;
     _dartsThisTurn++;
-
-    ref.read(ttsServiceProvider).speakScore(
-      _currentTargetIndex < 20
-          ? (_currentTargetIndex + 1) * 2
-          : 50, // D-Bull = 50
-    );
 
     if (_currentTargetIndex + 1 >= _targets.length) {
       // Game complete
@@ -191,18 +184,6 @@ class _DoublesTrainingScreenState extends ConsumerState<DoublesTrainingScreen> {
           tooltip: 'Quit training',
           onPressed: () => _confirmQuit(),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              ref.watch(ttsEnabledProvider) ? Icons.volume_up : Icons.volume_off,
-              color: ref.watch(ttsEnabledProvider)
-                  ? AppColors.secondaryYellow
-                  : AppColors.textMuted,
-            ),
-            tooltip: 'Toggle score audio',
-            onPressed: () => ref.read(ttsServiceProvider).toggle(),
-          ),
-        ],
       ),
       body: Column(
         children: [
