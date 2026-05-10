@@ -235,9 +235,20 @@ class ActiveGameNotifier extends StateNotifier<ActiveGameState> {
 
     // Move to next player
     final currentIndex = game.playerIds.indexOf(playerId);
-    final nextPlayerId = isLegWon
-        ? game.playerIds.first // Reset to first player on new leg
-        : game.playerIds[(currentIndex + 1) % game.playerIds.length];
+    String nextPlayerId;
+    if (isLegWon && !isGameWon) {
+      // Alternate starting player: whoever started this leg, the other goes next
+      final currentLeg = game.legs[state.currentLegIndex];
+      final legStarterId = currentLeg.turns.isNotEmpty
+          ? currentLeg.turns.first.playerId
+          : game.playerIds.first;
+      final starterIndex = game.playerIds.indexOf(legStarterId);
+      nextPlayerId = game.playerIds[(starterIndex + 1) % game.playerIds.length];
+    } else if (isLegWon && isGameWon) {
+      nextPlayerId = playerId;
+    } else {
+      nextPlayerId = game.playerIds[(currentIndex + 1) % game.playerIds.length];
+    }
 
     // Determine winnerId: in teams mode, use the player who won the last leg
     final updatedGame = game.copyWith(
