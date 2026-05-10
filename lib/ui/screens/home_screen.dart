@@ -95,7 +95,7 @@ class HomeScreen extends ConsumerWidget {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   icon: const Icon(Icons.person, size: 18, color: Colors.white),
-                  label: const Text('Profile & Stats', style: TextStyle(fontSize: 15, color: Colors.white)),
+                  label: const Text('My Profile & Statistics', style: TextStyle(fontSize: 15, color: Colors.white)),
                 ),
               ),
             ],
