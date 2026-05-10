@@ -22,7 +22,6 @@ class TtsService {
     if (_initialized) return;
     _initialized = true;
     await _tts.setLanguage('en-US');
-    await _tts.setSpeechRate(0.45);
     await _tts.setVolume(1.0);
   }
 
@@ -40,17 +39,35 @@ class TtsService {
     _ref.read(ttsEnabledProvider.notifier).state = !current;
   }
 
-  /// Speak the thrown score number.
+  /// Speak the thrown score number with enthusiasm based on score value.
   Future<void> speakScore(int score) async {
     if (!_ref.read(ttsEnabledProvider)) return;
     await _init();
-    await _tts.speak('$score');
+
+    // Higher scores → faster speech and higher pitch
+    // Score range: 0-180
+    // Rate: 0.6 (low scores) → 1.0 (high scores)
+    // Pitch: 1.0 (low scores) → 1.5 (180)
+    final ratio = (score / 180).clamp(0.0, 1.0);
+    final rate = 0.6 + (ratio * 0.4);
+    final pitch = 1.0 + (ratio * 0.5);
+
+    await _tts.setSpeechRate(rate);
+    await _tts.setPitch(pitch);
+
+    if (score == 180) {
+      await _tts.speak('One hundred and eighty!');
+    } else {
+      await _tts.speak('$score');
+    }
   }
 
   /// Announce that a player requires a checkout score.
   Future<void> speakCheckout(String playerName, int remaining) async {
     if (!_ref.read(ttsEnabledProvider)) return;
     await _init();
+    await _tts.setSpeechRate(0.65);
+    await _tts.setPitch(1.0);
     await _tts.speak('$playerName requires $remaining');
   }
 }
