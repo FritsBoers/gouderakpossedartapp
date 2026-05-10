@@ -103,6 +103,24 @@ class Scoreboard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
+                  // Sets won (if playing with sets)
+                  if (game.setsToWin > 0)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.stars, size: 14, color: AppColors.textMuted),
+                        const SizedBox(width: 4),
+                        Text(
+                          'S ${player.setsWon}/${game.setsToWin}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (game.setsToWin > 0)
+                    const SizedBox(height: 2),
                   // Legs won
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -110,7 +128,7 @@ class Scoreboard extends StatelessWidget {
                       const Icon(Icons.flag, size: 14, color: AppColors.textMuted),
                       const SizedBox(width: 4),
                       Text(
-                        '${player.legsWon}/${game.legsToWin}',
+                        'L ${player.legsWon}/${game.legsToWin}',
                         style: const TextStyle(
                           fontSize: 13,
                           color: AppColors.textMuted,
