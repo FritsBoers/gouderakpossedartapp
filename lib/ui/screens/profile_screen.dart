@@ -301,6 +301,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
         ref.invalidate(currentUserProvider);
         ref.invalidate(playerStatsProvider);
+        await ref.read(leaderboardServiceProvider).clearCache();
+        for (final cat in LeaderboardCategory.values) {
+          ref.invalidate(leaderboardProvider(cat));
+        }
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
