@@ -33,6 +33,10 @@ service cloud.firestore {
                 && request.resource.data.displayName.size() >= 3
                 && request.resource.data.displayName.size() <= 20));
 
+      // Any authenticated user can update stats (local multiplayer: one device updates all players)
+      allow update: if isAuth()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats']);
+
       // Users can delete their own profile
       allow delete: if isOwner(uid);
     }
