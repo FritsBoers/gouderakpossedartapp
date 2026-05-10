@@ -72,7 +72,7 @@ class Scoreboard extends StatelessWidget {
                   Text(
                     '$remaining',
                     style: TextStyle(
-                      fontSize: 42,
+                      fontSize: 54,
                       fontWeight: FontWeight.w700,
                       color: isActive
                           ? AppColors.textPrimary

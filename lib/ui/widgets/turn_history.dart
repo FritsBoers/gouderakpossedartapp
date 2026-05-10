@@ -96,7 +96,7 @@ class _TurnTile extends StatelessWidget {
           Text(
             turn.isBust ? 'BUST' : '${turn.totalScore}',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
               color: turn.isBust ? AppColors.error : AppColors.textPrimary,
             ),
