@@ -102,39 +102,81 @@ class Scoreboard extends StatelessWidget {
                           : AppColors.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  // Sets won (if playing with sets)
-                  if (game.setsToWin > 0)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  const SizedBox(height: 4),
+                  // Sets & Legs score
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundDark.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
                       children: [
-                        const Icon(Icons.stars, size: 14, color: AppColors.textMuted),
-                        const SizedBox(width: 4),
-                        Text(
-                          'S ${player.setsWon}/${game.setsToWin}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textMuted,
+                        if (game.setsToWin > 0) ...[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.stars, size: 16, color: AppColors.secondaryYellow),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Sets',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${player.setsWon}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              Text(
+                                ' / ${game.setsToWin}',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 2),
+                        ],
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.flag, size: 16, color: AppColors.secondaryYellow),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Legs',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${player.legsWon}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            Text(
+                              ' / ${game.legsToWin}',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  if (game.setsToWin > 0)
-                    const SizedBox(height: 2),
-                  // Legs won
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.flag, size: 14, color: AppColors.textMuted),
-                      const SizedBox(width: 4),
-                      Text(
-                        'L ${player.legsWon}/${game.legsToWin}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
                   ),
                   const SizedBox(height: 4),
                   // Per-player stats
