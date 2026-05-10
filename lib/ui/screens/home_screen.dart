@@ -24,7 +24,7 @@ class HomeScreen extends ConsumerWidget {
               Center(
                 child: Image.asset(
                   'assets/images/logo.png',
-                  height: 100,
+                  height: 120,
                 ),
               ),
               const SizedBox(height: 16),
