@@ -47,10 +47,10 @@ class TtsService {
     // Higher scores → faster speech and higher pitch
     // Score range: 0-180
     // Rate: 0.6 (low scores) → 1.0 (high scores)
-    // Pitch: 1.0 (low scores) → 1.5 (180)
+    // Pitch: 1.0 (low scores) → 2.0 (180)
     final ratio = (score / 180).clamp(0.0, 1.0);
     final rate = 0.6 + (ratio * 0.4);
-    final pitch = 1.0 + (ratio * 0.5);
+    final pitch = 1.0 + (ratio * 1.0);
 
     await _tts.setSpeechRate(rate);
     await _tts.setPitch(pitch);
