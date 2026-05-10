@@ -7,7 +7,9 @@ import '../../providers/auth_provider.dart';
 import '../../providers/game_provider.dart';
 import '../../providers/stats_provider.dart';
 import '../../providers/leaderboard_provider.dart';
+import '../../models/leaderboard_entry.dart';
 import '../../core/utils/checkout_suggestions.dart';
+import '../widgets/badge_celebration.dart';
 import '../widgets/score_input.dart';
 import '../widgets/scoreboard.dart';
 import '../widgets/checkout_suggestion.dart';
@@ -503,6 +505,35 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         ref.invalidate(playerStatsProvider);
         await ref.read(leaderboardServiceProvider).clearCache();
         ref.invalidate(leaderboardProvider);
+
+        // Check for newly earned badges and show celebration
+        if (!mounted) return;
+        final playerUids = game.players
+            .where((p) => !p.uid.startsWith('guest_'))
+            .map((p) => p.uid)
+            .toSet();
+        final playerNames = {
+          for (final p in game.players) p.uid: p.displayName,
+        };
+        final earnedBadges = <EarnedBadge>[];
+        final service = ref.read(leaderboardServiceProvider);
+        for (final cat in LeaderboardCategory.values) {
+          try {
+            final entries = await service.getLeaderboard(cat);
+            for (final entry in entries) {
+              if (entry.rank <= 3 && playerUids.contains(entry.uid)) {
+                earnedBadges.add(EarnedBadge(
+                  playerName: playerNames[entry.uid] ?? entry.displayName,
+                  category: cat,
+                  rank: entry.rank,
+                ));
+              }
+            }
+          } catch (_) {}
+        }
+        if (earnedBadges.isNotEmpty && mounted) {
+          showBadgeCelebration(context, earnedBadges);
+        }
       });
     }
 
