@@ -15,6 +15,7 @@ import '../widgets/score_input.dart';
 import '../widgets/scoreboard.dart';
 import '../widgets/checkout_suggestion.dart';
 import '../widgets/turn_history.dart';
+import '../../services/tts_service.dart';
 
 /// Main game screen handling local multiplayer darts.
 class GameScreen extends ConsumerStatefulWidget {
@@ -422,6 +423,16 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                 : null,
           ),
           IconButton(
+            icon: Icon(
+              ref.watch(ttsEnabledProvider) ? Icons.volume_up : Icons.volume_off,
+              color: ref.watch(ttsEnabledProvider)
+                  ? AppColors.secondaryYellow
+                  : AppColors.textMuted,
+            ),
+            tooltip: 'Toggle score audio',
+            onPressed: () => ref.read(ttsServiceProvider).toggle(),
+          ),
+          IconButton(
             icon: const Icon(Icons.history),
             onPressed: () => _showHistory(context, currentLeg, game.players),
           ),
@@ -490,10 +501,27 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           Expanded(
             child: ScoreInput(
               onScoreSubmitted: (score, isDouble) {
+                ref.read(ttsServiceProvider).speakScore(score);
                 ref.read(activeGameProvider.notifier).submitTurn(
                       turnScore: score,
                       lastDartDouble: isDouble,
                     );
+                // Announce checkout if next player can check out
+                final newState = ref.read(activeGameProvider);
+                if (newState.game != null &&
+                    newState.game!.status == GameStatus.inProgress) {
+                  final nextId = newState.game!.currentPlayerId;
+                  final nextPlayer = newState.game!.players
+                      .firstWhere((p) => p.uid == nextId);
+                  final leg = newState.game!.legs[newState.currentLegIndex];
+                  final nextRemaining = leg.playerScores[nextId] ?? 0;
+                  if (CheckoutSuggestions.canCheckout(nextRemaining)) {
+                    ref.read(ttsServiceProvider).speakCheckout(
+                          nextPlayer.displayName,
+                          nextRemaining,
+                        );
+                  }
+                }
               },
               remainingScore: remaining,
             ),
