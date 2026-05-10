@@ -56,7 +56,6 @@ class UserModel {
     return {
       'displayName': displayName,
       'avatarUrl': avatarUrl,
-      'email': email,
       'provider': provider,
       'emailVerified': emailVerified,
       'createdAt': Timestamp.fromDate(createdAt),
