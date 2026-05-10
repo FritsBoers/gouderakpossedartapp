@@ -223,15 +223,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                 const SizedBox(height: 32),
 
-                // Dev: Reset all games
-                TextButton.icon(
-                  onPressed: () => _confirmResetGames(context),
-                  icon: const Icon(Icons.delete_sweep, color: Colors.orange),
-                  label: const Text(
-                    'Reset All Game Data',
-                    style: TextStyle(color: Colors.orange),
+                // Admin: Reset all games
+                if (user.isAdmin)
+                  TextButton.icon(
+                    onPressed: () => _confirmResetGames(context),
+                    icon: const Icon(Icons.delete_sweep, color: Colors.orange),
+                    label: const Text(
+                      'Reset All Game Data',
+                      style: TextStyle(color: Colors.orange),
+                    ),
                   ),
-                ),
 
                 // Delete account
                 TextButton.icon(

@@ -8,6 +8,7 @@ class UserModel {
   final String email;
   final String provider; // 'google', 'email', or 'guest'
   final bool emailVerified;
+  final bool isAdmin;
   final DateTime createdAt;
   final PlayerStats stats;
 
@@ -18,6 +19,7 @@ class UserModel {
     required this.email,
     required this.provider,
     required this.emailVerified,
+    this.isAdmin = false,
     required this.createdAt,
     required this.stats,
   });
@@ -47,6 +49,7 @@ class UserModel {
       email: data['email'] ?? '',
       provider: data['provider'] ?? 'email',
       emailVerified: data['emailVerified'] ?? false,
+      isAdmin: data['isAdmin'] ?? false,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       stats: PlayerStats.fromMap(data['stats'] ?? {}),
     );
@@ -67,6 +70,7 @@ class UserModel {
     String? displayName,
     String? avatarUrl,
     bool? emailVerified,
+    bool? isAdmin,
     PlayerStats? stats,
   }) {
     return UserModel(
@@ -76,6 +80,7 @@ class UserModel {
       email: email,
       provider: provider,
       emailVerified: emailVerified ?? this.emailVerified,
+      isAdmin: isAdmin ?? this.isAdmin,
       createdAt: createdAt,
       stats: stats ?? this.stats,
     );
