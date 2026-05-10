@@ -56,7 +56,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (newName != null && newName != currentName) {
       try {
         await ref.read(authServiceProvider).updateDisplayName(newName);
+        ref.read(leaderboardServiceProvider).clearCache();
         ref.invalidate(currentUserProvider);
+        for (final cat in LeaderboardCategory.values) {
+          ref.invalidate(leaderboardProvider(cat));
+        }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Nickname updated')),

@@ -42,7 +42,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           isScrollable: true,
           indicatorColor: AppColors.secondaryYellow,
           labelColor: AppColors.secondaryYellow,
-          unselectedLabelColor: AppColors.textMuted,
+          unselectedLabelColor: Colors.white,
           tabs: LeaderboardCategory.values
               .map((c) => Tab(text: c.displayName))
               .toList(),
