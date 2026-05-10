@@ -19,15 +19,15 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
               // Logo
               Center(
                 child: Image.asset(
                   'assets/images/logo.png',
-                  height: 120,
+                  height: 90,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               // Header
               Text(
                 'GOUDERAK POSSE',
@@ -45,7 +45,7 @@ class HomeScreen extends ConsumerWidget {
                       fontWeight: FontWeight.w900,
                     ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               currentUser.when(
                 data: (user) => Text(
                   'Welcome, ${user?.displayName ?? 'Player'}',
@@ -55,7 +55,7 @@ class HomeScreen extends ConsumerWidget {
                 loading: () => const SizedBox.shrink(),
                 error: (_, __) => const SizedBox.shrink(),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 24),
 
               // Main actions
               _ActionButton(
@@ -65,7 +65,7 @@ class HomeScreen extends ConsumerWidget {
                 color: AppColors.primaryRed,
                 onTap: () => context.push('/game'),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               _ActionButton(
                 icon: Icons.wifi,
                 label: 'Online Game',
@@ -73,7 +73,7 @@ class HomeScreen extends ConsumerWidget {
                 color: AppColors.primaryRedLight,
                 onTap: () => context.push('/join'),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               _ActionButton(
                 icon: Icons.leaderboard,
                 label: 'Leaderboards',
@@ -82,12 +82,12 @@ class HomeScreen extends ConsumerWidget {
                 textColor: Colors.black,
                 onTap: () => context.push('/leaderboard'),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               _ActionButton(
                 icon: Icons.track_changes,
                 label: 'Doubles Training',
                 subtitle: 'Around the Clock practice',
-                color: Colors.green.shade700,
+                color: AppColors.secondaryYellowDark,
                 onTap: () => context.push('/doubles-training'),
               ),
               const Spacer(),
@@ -175,18 +175,18 @@ class _ActionButtonState extends State<_ActionButton> {
               onTap: widget.onTap,
               borderRadius: BorderRadius.circular(20),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: fgColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(widget.icon, color: fgColor, size: 28),
+                      child: Icon(widget.icon, color: fgColor, size: 24),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
