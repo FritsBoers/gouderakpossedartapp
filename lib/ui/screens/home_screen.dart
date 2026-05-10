@@ -82,6 +82,14 @@ class HomeScreen extends ConsumerWidget {
                 textColor: Colors.black,
                 onTap: () => context.push('/leaderboard'),
               ),
+              const SizedBox(height: 16),
+              _ActionButton(
+                icon: Icons.track_changes,
+                label: 'Doubles Training',
+                subtitle: 'Around the Clock practice',
+                color: Colors.green.shade700,
+                onTap: () => context.push('/doubles-training'),
+              ),
               const Spacer(),
 
               // Profile button
