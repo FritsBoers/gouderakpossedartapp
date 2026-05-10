@@ -79,6 +79,7 @@ class AppTheme {
         ),
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.surfaceLight,
+        contentTextStyle: const TextStyle(color: Colors.white),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
