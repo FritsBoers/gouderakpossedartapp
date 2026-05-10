@@ -514,7 +514,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         }
         ref.invalidate(playerStatsProvider);
         await ref.read(leaderboardServiceProvider).clearCache();
-        ref.invalidate(leaderboardProvider);
+        for (final cat in LeaderboardCategory.values) {
+          ref.invalidate(leaderboardProvider(cat));
+        }
+
+        // Small delay to let Firestore indexes catch up
+        await Future.delayed(const Duration(seconds: 1));
 
         // Check for newly earned badges and show celebration
         if (!mounted) return;
@@ -529,7 +534,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         final service = ref.read(leaderboardServiceProvider);
         for (final cat in LeaderboardCategory.values) {
           try {
-            final entries = await service.getLeaderboard(cat);
+            final entries = await service.getLeaderboard(cat, forceRefresh: true);
             for (final entry in entries) {
               if (entry.rank <= 3 && playerUids.contains(entry.uid)) {
                 earnedBadges.add(EarnedBadge(
