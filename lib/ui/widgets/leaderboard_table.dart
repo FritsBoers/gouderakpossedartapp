@@ -86,7 +86,7 @@ class _LeaderboardRow extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       color: _rankColor,
-                      fontSize: 16,
+                      fontSize: 15,
                     ),
                   ),
           ),
@@ -123,7 +123,7 @@ class _LeaderboardRow extends StatelessWidget {
             _formattedValue,
             style: TextStyle(
               fontWeight: FontWeight.w700,
-              fontSize: 18,
+              fontSize: 15,
               color: entry.rank <= 3 ? _rankColor : AppColors.textPrimary,
             ),
           ),
