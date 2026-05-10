@@ -24,10 +24,10 @@ class HomeScreen extends ConsumerWidget {
               Center(
                 child: Image.asset(
                   'assets/images/logo.png',
-                  height: 90,
+                  height: 100,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               // Header
               Text(
                 'GOUDERAK POSSE',
@@ -55,7 +55,7 @@ class HomeScreen extends ConsumerWidget {
                 loading: () => const SizedBox.shrink(),
                 error: (_, __) => const SizedBox.shrink(),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
               // Main actions
               _ActionButton(
