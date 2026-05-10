@@ -329,11 +329,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     List<UserModel> users,
     ValueChanged<UserModel> onChanged,
   ) {
+    final topWins = ref.watch(topWinsProvider).valueOrNull ?? {};
     return _PlayerDropdown(
       label: label,
       selected: selected,
       users: users,
       onChanged: onChanged,
+      topWins: topWins,
     );
   }
 
@@ -427,7 +429,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       body: Column(
         children: [
           // Scoreboard (includes per-player stats)
-          Scoreboard(game: game, currentLegIndex: gameState.currentLegIndex),
+          Scoreboard(
+            game: game,
+            currentLegIndex: gameState.currentLegIndex,
+            topWins: ref.watch(topWinsProvider).valueOrNull ?? {},
+          ),
 
           // Current player indicator
           Container(
@@ -777,12 +783,14 @@ class _PlayerDropdown extends StatefulWidget {
   final UserModel? selected;
   final List<UserModel> users;
   final ValueChanged<UserModel> onChanged;
+  final Map<String, int> topWins;
 
   const _PlayerDropdown({
     required this.label,
     required this.selected,
     required this.users,
     required this.onChanged,
+    this.topWins = const {},
   });
 
   @override
@@ -851,6 +859,20 @@ class _PlayerDropdownState extends State<_PlayerDropdown> {
                     ),
                   ),
                 ),
+                if (widget.selected != null &&
+                    widget.topWins.containsKey(widget.selected!.uid))
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: Icon(
+                      Icons.emoji_events,
+                      size: 18,
+                      color: widget.topWins[widget.selected!.uid] == 1
+                          ? AppColors.secondaryYellow
+                          : widget.topWins[widget.selected!.uid] == 2
+                              ? const Color(0xFFC0C0C0)
+                              : const Color(0xFFCD7F32),
+                    ),
+                  ),
                 AnimatedRotation(
                   turns: _isOpen ? 0.5 : 0,
                   duration: const Duration(milliseconds: 200),
@@ -992,16 +1014,32 @@ class _PlayerDropdownState extends State<_PlayerDropdown> {
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 16, vertical: 12),
-                                      child: Text(
-                                        u.displayName,
-                                        style: TextStyle(
-                                          color: isSelected
-                                              ? AppColors.secondaryYellow
-                                              : AppColors.textPrimary,
-                                          fontWeight: isSelected
-                                              ? FontWeight.w600
-                                              : FontWeight.normal,
-                                        ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              u.displayName,
+                                              style: TextStyle(
+                                                color: isSelected
+                                                    ? AppColors.secondaryYellow
+                                                    : AppColors.textPrimary,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.w600
+                                                    : FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
+                                          if (widget.topWins.containsKey(u.uid))
+                                            Icon(
+                                              Icons.emoji_events,
+                                              size: 18,
+                                              color: widget.topWins[u.uid] == 1
+                                                  ? AppColors.secondaryYellow
+                                                  : widget.topWins[u.uid] == 2
+                                                      ? const Color(0xFFC0C0C0)
+                                                      : const Color(0xFFCD7F32),
+                                            ),
+                                        ],
                                       ),
                                     ),
                                   ),

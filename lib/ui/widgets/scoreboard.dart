@@ -6,11 +6,13 @@ import '../../models/game_model.dart';
 class Scoreboard extends StatelessWidget {
   final GameModel game;
   final int currentLegIndex;
+  final Map<String, int> topWins;
 
   const Scoreboard({
     super.key,
     required this.game,
     required this.currentLegIndex,
+    this.topWins = const {},
   });
 
   @override
@@ -55,17 +57,38 @@ class Scoreboard extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  // Player name
-                  Text(
-                    player.displayName,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: isActive
-                          ? AppColors.secondaryYellow
-                          : AppColors.textSecondary,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                  // Player name with optional medal
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          player.displayName,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isActive
+                                ? AppColors.secondaryYellow
+                                : AppColors.textSecondary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (topWins.containsKey(player.uid))
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Icon(
+                            Icons.emoji_events,
+                            size: 16,
+                            color: topWins[player.uid] == 1
+                                ? AppColors.secondaryYellow
+                                : topWins[player.uid] == 2
+                                    ? const Color(0xFFC0C0C0)
+                                    : const Color(0xFFCD7F32),
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 2),
                   // Remaining score (large)

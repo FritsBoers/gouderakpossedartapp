@@ -22,3 +22,13 @@ final leaderboardRefreshProvider =
     return service.getLeaderboard(category, forceRefresh: true);
   },
 );
+
+/// Top-3 most wins: uid → rank (1, 2, or 3).
+final topWinsProvider = FutureProvider<Map<String, int>>((ref) async {
+  final entries = await ref.watch(leaderboardProvider(LeaderboardCategory.mostWins).future);
+  final map = <String, int>{};
+  for (final e in entries) {
+    if (e.rank <= 3) map[e.uid] = e.rank;
+  }
+  return map;
+});
