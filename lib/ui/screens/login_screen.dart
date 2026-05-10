@@ -74,6 +74,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 48),
+              // Logo
+              Center(
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  height: 120,
+                ),
+              ),
+              const SizedBox(height: 16),
               // Branding
               Text(
                 'GOUDERAK POSSE',
