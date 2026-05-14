@@ -1,5 +1,5 @@
 name: gouderakpossedartapp
-description: De Gouderak Posse Dart App - A competitive darts counter with multiplayer and leaderboards.
+description: De Gouderak Dart App - A competitive darts counter with multiplayer and leaderboards.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -20,6 +20,7 @@ dependencies:
   uuid: ^4.3.3
   intl: ^0.19.0
   flutter_tts: ^4.2.5
+  firebase_app_check: ^0.3.2+10
 
 dev_dependencies:
   flutter_test:

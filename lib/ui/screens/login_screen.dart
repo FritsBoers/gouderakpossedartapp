@@ -84,7 +84,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 16),
               // Branding
               Text(
-                'GOUDERAK POSSE',
+                'GOUDERAK',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: AppColors.secondaryYellow,

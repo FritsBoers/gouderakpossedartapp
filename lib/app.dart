@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
-/// Root widget for the Gouderak Posse Darts application.
+/// Root widget for the Gouderak Darts application.
 class GouderakDartsApp extends ConsumerWidget {
   const GouderakDartsApp({super.key});
 
@@ -12,7 +12,7 @@ class GouderakDartsApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'Gouderak Posse Darts',
+      title: 'Gouderak Darts',
       theme: AppTheme.darkTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'app.dart';
@@ -19,6 +21,14 @@ void main() async {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+
+      // Activate App Check to prevent unauthorized API access
+      await FirebaseAppCheck.instance.activate(
+        webProvider: kDebugMode
+            ? ReCaptchaV3Provider('6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI') // debug key
+            : ReCaptchaV3Provider('6LfcVeUsAAAAAAAnG2hzR_AIRn8JXJ3i0KQloqYr'),
+      );
+
       firebaseInitialized = true;
 
       // One-time migration: strip email field from all user documents

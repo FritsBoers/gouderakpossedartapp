@@ -30,7 +30,7 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               // Header
               Text(
-                'GOUDERAK POSSE',
+                'GOUDERAK',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                       color: AppColors.secondaryYellow,

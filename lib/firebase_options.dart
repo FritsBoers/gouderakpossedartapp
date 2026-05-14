@@ -1,4 +1,3 @@
-// Placeholder for Firebase configuration.
 // Generate this file by running: flutterfire configure
 // See README for setup instructions.
 

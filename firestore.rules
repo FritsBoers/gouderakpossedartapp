@@ -17,6 +17,11 @@ service cloud.firestore {
       return isAuth() && request.auth.uid == uid;
     }
 
+    // Helper: check if user is admin (from Firestore user document)
+    function isAdmin() {
+      return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
     // User profiles
     match /users/{uid} {
       // Any authenticated user can read profiles (for leaderboards, game display)
@@ -58,17 +63,15 @@ service cloud.firestore {
       allow update: if isVerified()
         && request.auth.uid in resource.data.playerIds;
 
-      // Authenticated users can delete games (for reset)
-      allow delete: if isAuth();
+      // Only players in the game or admins can delete
+      allow delete: if isVerified()
+        && (request.auth.uid in resource.data.playerIds || isAdmin());
     }
 
-    // Leaderboards (cached aggregations)
+    // Leaderboards (read-only; computed client-side from user stats)
     match /leaderboards/{category} {
-      // Anyone can read leaderboards
       allow read: if true;
-
-      // Only verified users can update (client-side aggregation)
-      allow write: if isVerified();
+      allow write: if false;
     }
   }
 }
