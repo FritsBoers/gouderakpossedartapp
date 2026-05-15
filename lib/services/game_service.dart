@@ -16,6 +16,8 @@ class GameService {
     required String hostDisplayName,
     int startingScore = 501,
     int legsToWin = 3,
+    EntryRule entryRule = EntryRule.straightIn,
+    ExitRule exitRule = ExitRule.doubleOut,
     bool isOnline = false,
   }) async {
     final gameCode = await _generateUniqueGameCode();
@@ -30,6 +32,8 @@ class GameService {
       playerIds: [hostUid],
       startingScore: startingScore,
       legsToWin: legsToWin,
+      entryRule: entryRule,
+      exitRule: exitRule,
       status: GameStatus.waiting,
       currentPlayerId: hostUid,
       legs: [

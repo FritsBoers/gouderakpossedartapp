@@ -15,20 +15,11 @@ class _ChangelogEntry {
 
 const _changelog = [
   _ChangelogEntry(
-    version: '1.1.0',
-    date: '2026-05-15',
-    changes: [
-      'App hernoemd naar Gouderak Darts',
-      'About & Changelog pagina toegevoegd',
-    ],
-  ),
-  _ChangelogEntry(
     version: '1.0.0',
     date: '2026-05-10',
     changes: [
       'Eerste release',
       'Lokale multiplayer (zelfde scherm)',
-      'Online multiplayer via gamecodes',
       'Checkout suggesties tot 170',
       'Speler statistieken & leaderboards',
       'Google & Email/Password authenticatie',

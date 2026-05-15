@@ -12,6 +12,7 @@ import '../../ui/screens/register_screen.dart';
 import '../../ui/screens/verify_email_screen.dart';
 import '../../ui/screens/doubles_training_screen.dart';
 import '../../ui/screens/about_screen.dart';
+import '../../ui/screens/online_game_screen.dart';
 
 /// Provides the app router configuration with auth-based redirects.
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -85,6 +86,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/about',
         builder: (context, state) => const AboutScreen(),
+      ),
+      GoRoute(
+        path: '/online-game/:gameId',
+        builder: (context, state) => OnlineGameScreen(
+          gameId: state.pathParameters['gameId']!,
+        ),
       ),
     ],
   );
