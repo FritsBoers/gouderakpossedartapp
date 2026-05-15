@@ -106,6 +106,17 @@ class HomeScreen extends ConsumerWidget {
                   label: const Text('My Profile & Statistics', style: TextStyle(fontSize: 15, color: Colors.white)),
                 ),
               ),
+              // Version / About link
+              GestureDetector(
+                onTap: () => context.push('/about'),
+                child: Text(
+                  "v1.1.0 · What's new?",
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white54,
+                      ),
+                ),
+              ),
             ],
           ),
         ),

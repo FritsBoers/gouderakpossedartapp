@@ -11,6 +11,7 @@ import '../../ui/screens/login_screen.dart';
 import '../../ui/screens/register_screen.dart';
 import '../../ui/screens/verify_email_screen.dart';
 import '../../ui/screens/doubles_training_screen.dart';
+import '../../ui/screens/about_screen.dart';
 
 /// Provides the app router configuration with auth-based redirects.
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -80,6 +81,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/doubles-training',
         builder: (context, state) => const DoublesTrainingScreen(),
+      ),
+      GoRoute(
+        path: '/about',
+        builder: (context, state) => const AboutScreen(),
       ),
     ],
   );
