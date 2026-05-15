@@ -16,14 +16,15 @@ class _ChangelogEntry {
 const _changelog = [
   _ChangelogEntry(
     version: '1.0.0',
-    date: '2026-05-10',
+    date: '2026-05-15',
     changes: [
-      'Eerste release',
-      'Lokale multiplayer (zelfde scherm)',
-      'Checkout suggesties tot 170',
-      'Speler statistieken & leaderboards',
-      'Google & Email/Password authenticatie',
-      'Doubles training modus',
+      'First release',
+      'Lokale multiplayer mode ',
+      'Online multiplayer mode ',
+      'Checkout suggestions',
+      'Player statistics & leaderboards',
+      'Google & Email/Password authentication',
+      'Doubles training mode',
     ],
   ),
 ];
@@ -55,6 +56,14 @@ class AboutScreen extends StatelessWidget {
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: AppColors.primaryRed,
                   fontWeight: FontWeight.w900,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'App Designed and Built by FBIE',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.white54,
                 ),
           ),
           const SizedBox(height: 4),
