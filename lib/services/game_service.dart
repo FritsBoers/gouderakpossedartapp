@@ -56,9 +56,9 @@ class GameService {
     required String playerUid,
     required String playerDisplayName,
   }) async {
+    // Query only on gameCode to avoid needing a composite index
     final querySnapshot = await _gamesRef
         .where('gameCode', isEqualTo: gameCode.toUpperCase())
-        .where('status', isEqualTo: GameStatus.waiting.name)
         .limit(1)
         .get();
 
@@ -66,6 +66,9 @@ class GameService {
 
     final doc = querySnapshot.docs.first;
     final game = GameModel.fromFirestore(doc);
+
+    // Check status client-side
+    if (game.status != GameStatus.waiting) return null;
 
     // Don't allow joining your own game
     if (game.playerIds.contains(playerUid)) return game;
