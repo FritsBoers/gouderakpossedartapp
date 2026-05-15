@@ -14,111 +14,128 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 8),
-              // Logo
-              Center(
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  height: 120,
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Header
-              Text(
-                'GOUDERAK',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: AppColors.secondaryYellow,
-                      letterSpacing: 2,
-                    ),
-              ),
-              Text(
-                'DARTS',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: AppColors.primaryRed,
-                      fontWeight: FontWeight.w900,
-                    ),
-              ),
-              const SizedBox(height: 4),
-              currentUser.when(
-                data: (user) => Text(
-                  'Welcome, ${user?.displayName ?? 'Player'}',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-              ),
-              const SizedBox(height: 32),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight - 48),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 8),
+                        // Logo
+                        Center(
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            height: 120,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Header
+                        Text(
+                          'GOUDERAK',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                color: AppColors.secondaryYellow,
+                                letterSpacing: 2,
+                              ),
+                        ),
+                        Text(
+                          'DARTS',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                                color: AppColors.primaryRed,
+                                fontWeight: FontWeight.w900,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        currentUser.when(
+                          data: (user) => Text(
+                            'Welcome, ${user?.displayName ?? 'Player'}',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
+                        const SizedBox(height: 32),
 
-              // Main actions
-              _ActionButton(
-                icon: Icons.gps_fixed,
-                label: 'Local Game',
-                subtitle: 'Play on this device',
-                color: AppColors.primaryRed,
-                onTap: () => context.push('/game'),
-              ),
-              const SizedBox(height: 10),
-              _ActionButton(
-                icon: Icons.wifi,
-                label: 'Online Game',
-                subtitle: 'Create or join a game',
-                color: AppColors.primaryRedLight,
-                onTap: () => context.push('/join'),
-              ),
-              const SizedBox(height: 10),
-              _ActionButton(
-                icon: Icons.track_changes,
-                label: 'Doubles Training',
-                subtitle: 'Around the Clock practice',
-                color: AppColors.secondaryYellow,
-                textColor: Colors.black,
-                onTap: () => context.push('/doubles-training'),
-              ),
-              const SizedBox(height: 10),
-              _ActionButton(
-                icon: Icons.leaderboard,
-                label: 'Leaderboards',
-                subtitle: 'View rankings',
-                color: AppColors.secondaryYellowDark,
-                onTap: () => context.push('/leaderboard'),
-              ),
-              const Spacer(),
+                        // Main actions
+                        _ActionButton(
+                          icon: Icons.gps_fixed,
+                          label: 'Local Game',
+                          subtitle: 'Play on this device',
+                          color: AppColors.primaryRed,
+                          onTap: () => context.push('/game'),
+                        ),
+                        const SizedBox(height: 10),
+                        _ActionButton(
+                          icon: Icons.wifi,
+                          label: 'Online Game',
+                          subtitle: 'Create or join a game',
+                          color: AppColors.primaryRedLight,
+                          onTap: () => context.push('/join'),
+                        ),
+                        const SizedBox(height: 10),
+                        _ActionButton(
+                          icon: Icons.track_changes,
+                          label: 'Doubles Training',
+                          subtitle: 'Around the Clock practice',
+                          color: AppColors.secondaryYellow,
+                          textColor: Colors.black,
+                          onTap: () => context.push('/doubles-training'),
+                        ),
+                        const SizedBox(height: 10),
+                        _ActionButton(
+                          icon: Icons.leaderboard,
+                          label: 'Leaderboards',
+                          subtitle: 'View rankings',
+                          color: AppColors.secondaryYellowDark,
+                          onTap: () => context.push('/leaderboard'),
+                        ),
+                      ],
+                    ),
 
-              // Profile button
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: TextButton.icon(
-                  onPressed: () => context.push('/profile'),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  icon: const Icon(Icons.person, size: 18, color: Colors.white),
-                  label: const Text('My Profile & Statistics', style: TextStyle(fontSize: 15, color: Colors.white)),
+                    // Bottom section
+                    Column(
+                      children: [
+                        // Profile button
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: TextButton.icon(
+                            onPressed: () => context.push('/profile'),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            icon: const Icon(Icons.person, size: 18, color: Colors.white),
+                            label: const Text('My Profile & Statistics', style: TextStyle(fontSize: 15, color: Colors.white)),
+                          ),
+                        ),
+                        // Version / About link
+                        GestureDetector(
+                          onTap: () => context.push('/about'),
+                          child: Text(
+                            "v1.0.0 · What's new?",
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.white54,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              // Version / About link
-              GestureDetector(
-                onTap: () => context.push('/about'),
-                child: Text(
-                  "v1.1.0 · What's new?",
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white54,
-                      ),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
