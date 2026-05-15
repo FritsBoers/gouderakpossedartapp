@@ -100,6 +100,7 @@ class PlayerStats {
   final int totalCheckouts;
   final int totalCheckoutAttempts;
   final int totalComebacks;
+  final int totalHighFinishes;
 
   const PlayerStats({
     this.totalWins = 0,
@@ -113,6 +114,7 @@ class PlayerStats {
     this.totalCheckouts = 0,
     this.totalCheckoutAttempts = 0,
     this.totalComebacks = 0,
+    this.totalHighFinishes = 0,
   });
 
   factory PlayerStats.fromMap(Map<String, dynamic> map) {
@@ -128,6 +130,7 @@ class PlayerStats {
       totalCheckouts: map['totalCheckouts'] ?? 0,
       totalCheckoutAttempts: map['totalCheckoutAttempts'] ?? 0,
       totalComebacks: map['totalComebacks'] ?? 0,
+      totalHighFinishes: map['totalHighFinishes'] ?? 0,
     );
   }
 
@@ -144,6 +147,7 @@ class PlayerStats {
       'totalCheckouts': totalCheckouts,
       'totalCheckoutAttempts': totalCheckoutAttempts,
       'totalComebacks': totalComebacks,
+      'totalHighFinishes': totalHighFinishes,
     };
   }
 
@@ -159,6 +163,7 @@ class PlayerStats {
     int? totalCheckouts,
     int? totalCheckoutAttempts,
     int? totalComebacks,
+    int? totalHighFinishes,
   }) {
     return PlayerStats(
       totalWins: totalWins ?? this.totalWins,
@@ -172,6 +177,7 @@ class PlayerStats {
       totalCheckouts: totalCheckouts ?? this.totalCheckouts,
       totalCheckoutAttempts: totalCheckoutAttempts ?? this.totalCheckoutAttempts,
       totalComebacks: totalComebacks ?? this.totalComebacks,
+      totalHighFinishes: totalHighFinishes ?? this.totalHighFinishes,
     );
   }
 }

@@ -39,6 +39,7 @@ class StatsService {
         final gameCheckouts = _countCheckouts(game, player.uid);
         final gameCheckoutAttempts = _countCheckoutAttempts(game, player.uid);
         final gameComeback = _isComeback(game, player.uid) ? 1 : 0;
+        final gameHighFinishes = _countHighFinishes(game, player.uid);
 
         // Compute running average
         final totalTurns = stats.totalGames > 0
@@ -60,6 +61,7 @@ class StatsService {
           totalCheckouts: stats.totalCheckouts + gameCheckouts,
           totalCheckoutAttempts: stats.totalCheckoutAttempts + gameCheckoutAttempts,
           totalComebacks: stats.totalComebacks + gameComeback,
+          totalHighFinishes: stats.totalHighFinishes + gameHighFinishes,
         );
 
         transaction.update(userRef, {'stats': updatedStats.toMap()});
@@ -148,6 +150,21 @@ class StatsService {
     int count = 0;
     for (final leg in game.legs) {
       if (leg.winnerId == playerId) count++;
+    }
+    return count;
+  }
+
+  /// Count 100+ finishes (checkouts with score >= 100) by a player.
+  int _countHighFinishes(GameModel game, String playerId) {
+    int count = 0;
+    for (final leg in game.legs) {
+      if (leg.winnerId == playerId && leg.turns.isNotEmpty) {
+        final winningTurns = leg.turns.where((t) => t.playerId == playerId).toList();
+        if (winningTurns.isNotEmpty) {
+          final lastTurn = winningTurns.last;
+          if (lastTurn.totalScore >= 100) count++;
+        }
+      }
     }
     return count;
   }
