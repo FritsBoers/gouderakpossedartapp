@@ -50,7 +50,7 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
       );
 
       if (mounted) {
-        context.push('/online-game/\${game.id}');
+        context.push('/online-game/${game.id}');
       }
     } catch (e) {
       setState(() => _errorMessage = 'Failed to create game');
@@ -87,7 +87,7 @@ class _JoinGameScreenState extends ConsumerState<JoinGameScreen> {
         setState(() => _errorMessage = 'Game not found or already started');
       } else {
         if (mounted) {
-          context.push('/online-game/\${game.id}');
+          context.push('/online-game/${game.id}');
         }
       }
     } catch (e) {
