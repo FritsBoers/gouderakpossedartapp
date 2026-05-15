@@ -398,9 +398,13 @@ class _OnlineGameScreenState extends ConsumerState<OnlineGameScreen> {
   Widget _buildGameOverScreen(BuildContext context, GameModel game) {
     if (!_statsUpdated) {
       _statsUpdated = true;
+      final myUid = ref.read(authStateProvider).valueOrNull?.uid;
       Future.microtask(() async {
         try {
-          await ref.read(statsServiceProvider).updateStatsAfterGame(game: game);
+          await ref.read(statsServiceProvider).updateStatsAfterGame(
+                game: game,
+                onlyForPlayer: myUid,
+              );
         } catch (e) {
           debugPrint('Stats update failed: $e');
         }

@@ -7,12 +7,16 @@ class StatsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// Update player stats after a game is completed.
+  /// If [onlyForPlayer] is set, only that player's stats are updated.
   Future<void> updateStatsAfterGame({
     required GameModel game,
+    String? onlyForPlayer,
   }) async {
     if (game.status != GameStatus.completed) return;
 
     for (final player in game.players) {
+      // Skip if we're only updating a specific player
+      if (onlyForPlayer != null && player.uid != onlyForPlayer) continue;
       // Skip guest (non-registered) players — no Firestore doc to update
       if (player.uid.startsWith('guest_')) continue;
 
