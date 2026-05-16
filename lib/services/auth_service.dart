@@ -78,10 +78,13 @@ class AuthService {
       final credential = await _auth.signInWithPopup(googleProvider);
       await ensureUserDocument(credential.user!);
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'popup-blocked' ||
-          e.code == 'popup-closed-by-user' ||
-          e.code == 'cancelled-popup-request') {
+      if (e.code == 'popup-blocked') {
+        // Only fall back to redirect when popup is genuinely blocked
         await _auth.signInWithRedirect(googleProvider);
+      } else if (e.code == 'popup-closed-by-user' ||
+          e.code == 'cancelled-popup-request') {
+        // User cancelled — do nothing, let the UI reset
+        return;
       } else {
         rethrow;
       }
