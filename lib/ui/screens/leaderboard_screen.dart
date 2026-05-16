@@ -8,7 +8,10 @@ import '../widgets/leaderboard_table.dart';
 
 /// Provider for community totals across all players.
 final communityTotalsProvider = FutureProvider<Map<String, int>>((ref) async {
-  final snapshot = await FirebaseFirestore.instance.collection('users').get();
+  final snapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where('emailVerified', isEqualTo: true)
+      .get();
   int totalGames = 0;
   int totalLegs = 0;
   int total180s = 0;

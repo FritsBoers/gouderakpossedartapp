@@ -46,6 +46,7 @@ class LeaderboardService {
 
     final snapshot = await _firestore
         .collection('users')
+        .where('emailVerified', isEqualTo: true)
         .orderBy(field, descending: true)
         .limit(_leaderboardLimit)
         .get();
@@ -74,8 +75,11 @@ class LeaderboardService {
       return _fetchBestDuo();
     }
 
-    // Fetch all users for computed ratio categories
-    final snapshot = await _firestore.collection('users').get();
+    // Fetch all verified users for computed ratio categories
+    final snapshot = await _firestore
+        .collection('users')
+        .where('emailVerified', isEqualTo: true)
+        .get();
     final entries = <LeaderboardEntry>[];
 
     for (final doc in snapshot.docs) {

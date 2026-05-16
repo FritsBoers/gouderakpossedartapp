@@ -15,6 +15,7 @@ final authStateProvider = StreamProvider<User?>((ref) {
 
 /// Provider for the current user's Firestore profile.
 /// Auto-creates the Firestore document if it doesn't exist (e.g. after Google redirect).
+/// Syncs emailVerified status from Auth to Firestore.
 final currentUserProvider = FutureProvider<UserModel?>((ref) async {
   final authState = ref.watch(authStateProvider);
   final user = authState.valueOrNull;
@@ -23,13 +24,22 @@ final currentUserProvider = FutureProvider<UserModel?>((ref) async {
   final authService = ref.read(authServiceProvider);
   // Ensure Firestore profile exists (handles redirect-based sign-in)
   await authService.ensureUserDocument(user);
+  // Sync emailVerified status from Auth to Firestore
+  if (user.emailVerified) {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .update({'emailVerified': true});
+  }
   return authService.getUserProfile(user.uid);
 });
 
-/// Provider for all registered users.
+/// Provider for all registered (and verified) users.
 final allUsersProvider = FutureProvider<List<UserModel>>((ref) async {
-  final snapshot =
-      await FirebaseFirestore.instance.collection('users').get();
+  final snapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where('emailVerified', isEqualTo: true)
+      .get();
   return snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
 });
 
