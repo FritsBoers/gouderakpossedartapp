@@ -68,13 +68,24 @@ class AuthService {
   }
 
   /// Sign in with Google.
-  /// Uses redirect instead of popup for mobile browser compatibility.
+  /// Tries popup first (works on desktop), falls back to redirect (for mobile).
   Future<void> signInWithGoogle() async {
     final googleProvider = GoogleAuthProvider();
     googleProvider.addScope('email');
     googleProvider.addScope('profile');
 
-    await _auth.signInWithRedirect(googleProvider);
+    try {
+      final credential = await _auth.signInWithPopup(googleProvider);
+      await ensureUserDocument(credential.user!);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'popup-blocked' ||
+          e.code == 'popup-closed-by-user' ||
+          e.code == 'cancelled-popup-request') {
+        await _auth.signInWithRedirect(googleProvider);
+      } else {
+        rethrow;
+      }
+    }
   }
 
   /// Ensure a Firestore user document exists for the given user.
