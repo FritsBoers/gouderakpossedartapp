@@ -47,7 +47,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           );
       // Router will redirect to verify-email screen
     } catch (e) {
-      setState(() => _errorMessage = 'Registration failed. Email may already be in use.');
+      setState(() => _errorMessage = 'Registration failed: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

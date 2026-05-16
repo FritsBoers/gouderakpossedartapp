@@ -27,7 +27,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to send email. Try again later.')),
+          SnackBar(content: Text('Failed to send email: $e')),
         );
       }
     } finally {
