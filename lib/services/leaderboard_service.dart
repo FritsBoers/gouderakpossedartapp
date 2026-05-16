@@ -46,12 +46,13 @@ class LeaderboardService {
 
     final snapshot = await _firestore
         .collection('users')
-        .where('emailVerified', isEqualTo: true)
         .orderBy(field, descending: true)
         .limit(_leaderboardLimit)
         .get();
 
-    return snapshot.docs.asMap().entries.map((entry) {
+    return snapshot.docs.asMap().entries
+        .where((entry) => entry.value.data()['emailVerified'] == true)
+        .map((entry) {
       final index = entry.key;
       final doc = entry.value;
       final data = doc.data();
@@ -75,15 +76,13 @@ class LeaderboardService {
       return _fetchBestDuo();
     }
 
-    // Fetch all verified users for computed ratio categories
-    final snapshot = await _firestore
-        .collection('users')
-        .where('emailVerified', isEqualTo: true)
-        .get();
+    // Fetch all users for computed ratio categories (filter client-side)
+    final snapshot = await _firestore.collection('users').get();
     final entries = <LeaderboardEntry>[];
 
     for (final doc in snapshot.docs) {
       final data = doc.data();
+      if (data['emailVerified'] != true) continue;
       final stats = data['stats'] as Map<String, dynamic>? ?? {};
 
       double value;

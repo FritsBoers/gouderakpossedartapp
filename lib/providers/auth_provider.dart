@@ -36,11 +36,11 @@ final currentUserProvider = FutureProvider<UserModel?>((ref) async {
 
 /// Provider for all registered (and verified) users.
 final allUsersProvider = FutureProvider<List<UserModel>>((ref) async {
-  final snapshot = await FirebaseFirestore.instance
-      .collection('users')
-      .where('emailVerified', isEqualTo: true)
-      .get();
-  return snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+  final snapshot = await FirebaseFirestore.instance.collection('users').get();
+  return snapshot.docs
+      .map((doc) => UserModel.fromFirestore(doc))
+      .where((user) => user.emailVerified)
+      .toList();
 });
 
 /// Provider to check if email is verified.
