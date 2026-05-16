@@ -14,12 +14,15 @@ final authStateProvider = StreamProvider<User?>((ref) {
 });
 
 /// Provider for the current user's Firestore profile.
+/// Auto-creates the Firestore document if it doesn't exist (e.g. after Google redirect).
 final currentUserProvider = FutureProvider<UserModel?>((ref) async {
   final authState = ref.watch(authStateProvider);
   final user = authState.valueOrNull;
   if (user == null) return null;
 
   final authService = ref.read(authServiceProvider);
+  // Ensure Firestore profile exists (handles redirect-based sign-in)
+  await authService.ensureUserDocument(user);
   return authService.getUserProfile(user.uid);
 });
 

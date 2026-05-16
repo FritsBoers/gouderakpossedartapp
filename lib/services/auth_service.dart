@@ -68,29 +68,33 @@ class AuthService {
   }
 
   /// Sign in with Google.
-  Future<UserCredential> signInWithGoogle() async {
+  /// Uses redirect instead of popup for mobile browser compatibility.
+  Future<void> signInWithGoogle() async {
     final googleProvider = GoogleAuthProvider();
     googleProvider.addScope('email');
     googleProvider.addScope('profile');
 
-    final credential = await _auth.signInWithPopup(googleProvider);
+    await _auth.signInWithRedirect(googleProvider);
+  }
 
-    // Create or update user document
-    final user = credential.user!;
+  /// Ensure a Firestore user document exists for the given user.
+  /// Called after redirect-based sign-in when the page reloads.
+  Future<void> ensureUserDocument(User user) async {
     final docRef = _firestore.collection('users').doc(user.uid);
     final doc = await docRef.get();
 
     if (!doc.exists) {
+      final provider = user.providerData.isNotEmpty
+          ? user.providerData.first.providerId
+          : 'unknown';
       await _createUserDocument(
         uid: user.uid,
         email: user.email ?? '',
         displayName: user.displayName ?? 'Player',
-        provider: 'google',
+        provider: provider,
         avatarUrl: user.photoURL,
       );
     }
-
-    return credential;
   }
 
   /// Send email verification to current user.
