@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
+import 'services/auth_service.dart';
 import 'app.dart';
 
 /// Whether Firebase was successfully initialized with real credentials.
@@ -30,6 +31,9 @@ void main() async {
       );
 
       firebaseInitialized = true;
+
+      // Handle Google sign-in redirect result (for iOS/Safari)
+      await AuthService().handleRedirectResult();
 
       // One-time migration: strip email field from all user documents
       _migrateRemoveEmails();

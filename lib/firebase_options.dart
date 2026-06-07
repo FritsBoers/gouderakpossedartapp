@@ -28,7 +28,7 @@ class DefaultFirebaseOptions {
     appId: '1:211642743133:web:b3e97271b3bd51d94650b4',
     messagingSenderId: '211642743133',
     projectId: 'grakpossedartapp',
-    authDomain: 'grakpossedartapp.firebaseapp.com',
+    authDomain: 'gouderakdarts.nl',
     storageBucket: 'grakpossedartapp.firebasestorage.app',
     measurementId: 'G-YEBT14VTY9',
   );

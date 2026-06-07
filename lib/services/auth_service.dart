@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import '../models/user_model.dart';
 
 /// Handles authentication and user profile management.
@@ -68,13 +69,25 @@ class AuthService {
   }
 
   /// Sign in with Google.
-  /// Uses redirect for reliable cross-browser support (especially iOS/Safari).
+  /// Uses redirect for iOS/Safari compatibility (avoids storage partitioning).
   Future<void> signInWithGoogle() async {
     final googleProvider = GoogleAuthProvider();
     googleProvider.addScope('email');
     googleProvider.addScope('profile');
 
     await _auth.signInWithRedirect(googleProvider);
+  }
+
+  /// Process redirect result after page reload (called on app startup).
+  Future<void> handleRedirectResult() async {
+    try {
+      final result = await _auth.getRedirectResult();
+      if (result.user != null) {
+        await ensureUserDocument(result.user!);
+      }
+    } catch (e) {
+      debugPrint('Redirect result error: \$e');
+    }
   }
 
   /// Ensure a Firestore user document exists for the given user.

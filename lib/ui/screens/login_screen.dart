@@ -68,38 +68,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 48),
-              // Logo
-              Center(
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  height: 120,
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Branding
-              Text(
-                'GOUDERAK',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.secondaryYellow,
-                      letterSpacing: 2,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isCompact = constraints.maxHeight < 700;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight - 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: isCompact ? 8 : 32),
+                    // Logo
+                    Center(
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        height: isCompact ? 72 : 120,
+                      ),
                     ),
-              ),
-              Text(
-                'DARTS',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      color: AppColors.primaryRed,
-                      fontWeight: FontWeight.w900,
+                    const SizedBox(height: 12),
+                    // Branding
+                    Text(
+                      'GOUDERAK',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: AppColors.secondaryYellow,
+                            letterSpacing: 2,
+                          ),
                     ),
-              ),
-              const SizedBox(height: 48),
+                    Text(
+                      'DARTS',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                            color: AppColors.primaryRed,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    SizedBox(height: isCompact ? 20 : 48),
 
               // Google sign-in
               OutlinedButton.icon(
@@ -213,7 +219,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ],
               ),
             ],
-          ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

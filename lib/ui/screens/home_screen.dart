@@ -16,6 +16,7 @@ class HomeScreen extends ConsumerWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final isCompact = constraints.maxHeight < 700;
             return SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: ConstrainedBox(
@@ -32,10 +33,10 @@ class HomeScreen extends ConsumerWidget {
                         Center(
                           child: Image.asset(
                             'assets/images/logo.png',
-                            height: 120,
+                            height: isCompact ? 72 : 120,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: isCompact ? 8 : 16),
                         // Header
                         Text(
                           'GOUDERAK',
@@ -63,7 +64,7 @@ class HomeScreen extends ConsumerWidget {
                           loading: () => const SizedBox.shrink(),
                           error: (_, __) => const SizedBox.shrink(),
                         ),
-                        const SizedBox(height: 32),
+                        SizedBox(height: isCompact ? 16 : 32),
 
                         // Main actions
                         _ActionButton(
